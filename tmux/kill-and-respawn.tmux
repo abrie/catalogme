@@ -1,0 +1,1 @@
+respawn-pane -k

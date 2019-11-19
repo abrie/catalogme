@@ -1,0 +1,7 @@
+{
+		"haproxy":{"port":8888},
+		"stats":{"port":8889},
+		"frontend":{"port":8080},
+		"backend":{"port":8400},
+		"datastore":{"port":8500}
+}
