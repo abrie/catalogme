@@ -1,3 +1,4 @@
+hot-compile.pid
 node_modules/
 imported/
 pkg/

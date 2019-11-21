@@ -12,14 +12,14 @@ type Storage struct {
 }
 
 func (s *Storage) Datafile() string {
-	return path.Join(s.Directory, "data.json")
+	return path.Join(s.Directory, "schema.json")
 }
 
 func (s *Storage) GetHandler(w http.ResponseWriter, r *http.Request) {
 	b, err := ioutil.ReadFile(s.Datafile())
 	if err != nil {
-		log.Printf("Failed to read the data file %s: %s", s.Datafile(), err.Error())
-		http.Error(w, "Failed to load data.", http.StatusInternalServerError)
+		log.Printf("Failed to read the file %s: %s", s.Datafile(), err.Error())
+		http.Error(w, "Failed to load.", http.StatusInternalServerError)
 	}
 
 	w.Header().Set("Content-Type", "application/json")

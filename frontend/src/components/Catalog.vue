@@ -1,7 +1,7 @@
 <template>
   <div class="hello">
-    <div>this is the Catalog page...</div>
-    <h1>{{ id }}</h1>
+    <div>{{name}}</div>
+    <h1>{{ params }}</h1>
   </div>
 </template>
 
@@ -9,7 +9,8 @@
 export default {
   name: 'Catalog',
   props: {
-   id: String
+    name: String,
+    params: Object,
   },
 }
 </script>

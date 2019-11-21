@@ -1,4 +1,4 @@
-var data = require('./migrated/data.json')
+var data = require('../migrated/data.json')
 
 const printKeys = (object) => {
   return Object.entries(object).map( ([key,value])=> {

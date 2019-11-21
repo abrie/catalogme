@@ -1,10 +1,14 @@
 <template>
   <div id="app">
-    <h1>Hello App!</h1>
-    <p>
-      <router-link to="/catalog/abc">catalog</router-link>
-    </p>
+    <h1>Catalog Builder</h1>
+    <ul>
+      <li v-for="link in links" v-bind:key="link">
+        <router-link :to=link>{{link}}</router-link>
+      </li>
+    </ul>
+    <hr>
     <router-view></router-view>
+    <hr>
   </div>
 </template>
 
@@ -12,6 +16,11 @@
 
 export default {
   name: 'app',
+  props: {
+  links: Array
+  },
+  mounted() {
+  }
 }
 </script>
 
@@ -20,7 +29,6 @@ export default {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
   color: #2c3e50;
   margin-top: 60px;
 }
