@@ -2,7 +2,7 @@ import Vue from 'vue'
 import VueX from 'vuex'
 import VueRouter from 'vue-router'
 import App from './App.vue'
-import Catalog from './components/Catalog.vue'
+import Page from './components/Page.vue'
 import Schema from './schema.json'
 
 Vue.config.productionTip = false
@@ -18,8 +18,8 @@ const routes = Schema.map( (i) => {
   return {
     path,
     name,
-    component: Catalog,
-    props: (route) => { return {name, params:route.params} },
+    component: Page,
+    props: (route) => { return {name, params:route.params, fields:i.fields} },
   }
 });
 

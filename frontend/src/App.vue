@@ -17,7 +17,7 @@
 export default {
   name: 'app',
   props: {
-  links: Array
+    links: Array
   },
   mounted() {
   }

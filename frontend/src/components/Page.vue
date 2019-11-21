@@ -1,5 +1,5 @@
 <template>
-  <div class="hello">
+  <div class="page">
     <div>{{name}}</div>
     <h1>{{ params }}</h1>
   </div>
@@ -7,7 +7,7 @@
 
 <script>
 export default {
-  name: 'Catalog',
+  name: 'Page',
   props: {
     name: String,
     params: Object,
@@ -15,7 +15,6 @@ export default {
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 h3 {
   margin: 40px 0 0;
