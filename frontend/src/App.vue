@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <h1>Catalog Builder</h1>
+    <h1>Your Shop Name</h1>
     <ul>
       <li v-for="link in links" v-bind:key="link">
         <router-link :to=link>{{link}}</router-link>

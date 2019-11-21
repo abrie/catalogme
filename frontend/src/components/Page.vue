@@ -2,6 +2,11 @@
   <div class="page">
     <div>{{name}}</div>
     <h1>{{ params }}</h1>
+    <ul>
+      <li v-for="field in fields" v-bind:key="field">
+        {{field}}
+      </li>
+    </ul>
   </div>
 </template>
 
@@ -11,6 +16,7 @@ export default {
   props: {
     name: String,
     params: Object,
+    fields: Array,
   },
 }
 </script>
