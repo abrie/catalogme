@@ -12,7 +12,7 @@ type Storage struct {
 }
 
 func (s *Storage) Datafile() string {
-	return path.Join(s.Directory, "schema.json")
+	return path.Join(s.Directory, "data.json")
 }
 
 func (s *Storage) GetHandler(w http.ResponseWriter, r *http.Request) {

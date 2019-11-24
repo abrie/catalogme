@@ -7,7 +7,8 @@
       </li>
     </ul>
     <hr>
-    <router-view></router-view>
+    <router-view>
+    </router-view>
     <hr>
   </div>
 </template>
@@ -19,7 +20,8 @@ export default {
   props: {
     links: Array
   },
-  mounted() {
+  created () {
+    this.$store.dispatch('data/getData')
   }
 }
 </script>

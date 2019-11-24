@@ -7,10 +7,13 @@
         {{field}}
       </li>
     </ul>
+    {{ data }}
   </div>
 </template>
 
 <script>
+import { mapState } from 'vuex'
+
 export default {
   name: 'Page',
   props: {
@@ -18,6 +21,9 @@ export default {
     params: Object,
     fields: Array,
   },
+  computed: mapState({
+    data: state => state.data.data
+  }),
 }
 </script>
 

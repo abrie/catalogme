@@ -26,7 +26,7 @@ func main() {
 
 	r := chi.NewRouter()
 	r.Use(NewCorsHandler())
-	r.Get("/schema.json", storage.GetHandler)
+	r.Get("/data.json", storage.GetHandler)
 	//r.Post("/", storage.PostHandler)
 
 	addr := fmt.Sprintf(":%d", *port)
