@@ -1,8 +1,9 @@
 # (<sub><sup>experimental</sup></sub>) Catalog Site Builder
 
+This is an attempt to generalize previous projects into a useful utility.
+
 A tool to build/generate a digital catalog according to a flat JSON schema.
 
-This project requires data files not currently checked into the repository.<br> So, at present, it's not useful to anyone other than myself.
 ## Requirements
 NPM, Golang 1.13, HAProxy ~2, Python ~3.
 
@@ -15,8 +16,8 @@ NPM, Golang 1.13, HAProxy ~2, Python ~3.
 2) `make up` to start the servers and hot compilers/reloader.
 3) Open `http://localhost:8888`
 
-## Customize
-Edit `./config.json` to change ports.
+## Notes
+- Edit `./config.json` to change ports.
 
 <hr>
 #### dev note: experiments using grid layout for item lists
