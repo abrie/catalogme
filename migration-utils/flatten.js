@@ -19,20 +19,15 @@ const flat = keys.reduce( (acc1, key) => {
 Object.entries(flat).forEach( ([flatName,flatValue]) => {
   if (flatName === "image") return
   Object.entries(flatValue).forEach( ([boId,boObj]) => {
-    if (boObj.items === undefined) {
-      boObj.items = [];
-    }
-
     // Build references and associations
     const references = Object.entries(boObj).filter( ([name,id]) => name.endsWith('_id') );
     const parents = references.forEach( ([name_id,id]) => {
       const parentName = name_id.substr(0, name_id.length - "_id".length);
       const parent = flat[parentName][id];
-      if (parent.itemType === undefined) {
-        parent.itemType = `${flatName}`;
-        parent.items = [];
+      if (parent[`list:${flatName}`] === undefined) {
+        parent[`list:${flatName}`] = [];
       }
-      parent.items.push(boId);
+      parent[`list:${flatName}`].push(boId);
 
     });
 
@@ -40,10 +35,10 @@ Object.entries(flat).forEach( ([flatName,flatValue]) => {
     if(boObj.image_group) {
       const images = Object.values(flat.image).filter( (o) => o.group === boObj.image_group);
       const imageIds = images.map( (o) => o.id );
-      boObj.images = imageIds;
+      boObj[`list:image`] = imageIds;
       delete(boObj.image_group);
     } else {
-      boObj.images = [];
+      boObj[`list:image`] = [];
     }
   });
 });
