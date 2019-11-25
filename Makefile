@@ -5,10 +5,15 @@ FRONTEND_PORT=$(shell jq .frontend.port config.json)
 BACKEND_PORT=$(shell jq .backend.port config.json)
 DATASTORE_PORT=$(shell jq .datastore.port config.json)
 
+sync:
+	ORIGINAL_DATA=$(PWD)/migrate/original ./migration-utils/sync.sh
+
+.PHONY: migrate
 migrate:
-	./migration-utils/import.sh
-	node ./migration-utils/flatten.js migrated/MERGED.json
-	jq '.' migrated/FLAT.json > migrated/data.json
+	ORIGINAL_DATA=$(PWD)/migrate/original TEMP_DATA=$(PWD)/migrate/temp ./migration-utils/extract.sh
+	mkdir -p $(PWD)/migrate/temp/flat-merged-json
+	node ./migration-utils/flatten.js $(PWD)/migrate/temp/merged-json/MERGED.json > $(PWD)/migrate/temp/flat-merged-json/FLAT.json
+	jq '.' $(PWD)/migrate/temp/flat-merged-json/FLAT.json > $(PWD)/migrated/data.json
 
 generate-schema:
 	node ./migration-utils/generate-schema.js migrated/data.json | jq . > migrated/schema.js

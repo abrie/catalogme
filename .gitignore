@@ -3,6 +3,7 @@ node_modules/
 imported/
 pkg/
 bin/
+migrate/
 migrated/
 data/
 

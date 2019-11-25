@@ -1,14 +1,12 @@
 #!/bin/bash
 set -ue
 
-dir=$PWD/imported
-out=$PWD/migrated
-db=$dir/db.sqlite3
+db=$ORIGINAL_DATA/db.sqlite3
+extracted=$TEMP_DATA/extracted-json
+merged=$TEMP_DATA/merged-json
 
-mkdir -p $dir
-mkdir -p $out
-
-rsync -avp --delete budsbenz.com:/mnt/budsbenz/datastore/ $dir
+mkdir -p $extracted
+mkdir -p $merged
 
 read -d '' image << EOF || true
 SELECT
@@ -163,16 +161,16 @@ SELECT
 AS json_result FROM (SELECT rowid, * FROM catalog_series_category_part_version)
 EOF
 
-sqlite3 $db "$catalog_series" | jq '{"catalog_series":.}' > $out/catalog_series.json
-sqlite3 $db "$catalog_series_category" | jq '{"catalog_series_category":.}' > $out/catalog_series_category.json
-sqlite3 $db "$catalog_series_category_part" | jq '{"catalog_series_category_part":.}' > $out/catalog_series_category_part.json
-sqlite3 $db "$catalog_series_category_part_version" | jq '{"catalog_series_category_part_version":.}' > $out/catalog_series_category_part_version.json
-sqlite3 $db "$portfolio_group" | jq '{"portfolio_group":.}' > $out/portfolio_group.json
-sqlite3 $db "$portfolio_group_item" | jq '{"portfolio_group_item":.}' > $out/portfolio_group_item.json
-sqlite3 $db "$restoration_item" | jq '{"restoration_item":.}' > $out/restoration_item.json
-sqlite3 $db "$service_item" | jq '{"service_item":.}' > $out/service_item.json
-sqlite3 $db "$market_carforsale" | jq '{"market_cartforsale":.}' > $out/market_carforsale.json
-sqlite3 $db "$about_topic" | jq '{"about_topic":.}' > $out/about_topic.json
-sqlite3 $db "$image" | jq '{"image":.}' > $out/image.json
+sqlite3 $db "$catalog_series" | jq '{"catalog_series":.}' > $extracted/catalog_series.json
+sqlite3 $db "$catalog_series_category" | jq '{"catalog_series_category":.}' > $extracted/catalog_series_category.json
+sqlite3 $db "$catalog_series_category_part" | jq '{"catalog_series_category_part":.}' > $extracted/catalog_series_category_part.json
+sqlite3 $db "$catalog_series_category_part_version" | jq '{"catalog_series_category_part_version":.}' > $extracted/catalog_series_category_part_version.json
+sqlite3 $db "$portfolio_group" | jq '{"portfolio_group":.}' > $extracted/portfolio_group.json
+sqlite3 $db "$portfolio_group_item" | jq '{"portfolio_group_item":.}' > $extracted/portfolio_group_item.json
+sqlite3 $db "$restoration_item" | jq '{"restoration_item":.}' > $extracted/restoration_item.json
+sqlite3 $db "$service_item" | jq '{"service_item":.}' > $extracted/service_item.json
+sqlite3 $db "$market_carforsale" | jq '{"market_cartforsale":.}' > $extracted/market_carforsale.json
+sqlite3 $db "$about_topic" | jq '{"about_topic":.}' > $extracted/about_topic.json
+sqlite3 $db "$image" | jq '{"image":.}' > $extracted/image.json
 
-cat $out/* | jq -s add > $out/MERGED.json
+cat $extracted/* | jq -s add > $merged/MERGED.json

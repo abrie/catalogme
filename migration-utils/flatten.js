@@ -50,11 +50,4 @@ Object.entries(flat).forEach( ([flatName,flatValue]) => {
 
 const str = JSON.stringify(flat);
 
-const outfilename = "migrated/FLAT.json"
-fs.writeFile(outfilename, str, function(err) {
-  if(err) {
-    return console.log(err);
-  }
-
-  console.log(outfilename);
-});
+console.log(JSON.stringify(flat));
