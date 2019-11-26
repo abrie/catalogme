@@ -43,6 +43,19 @@ Object.entries(flat).forEach( ([flatName,flatValue]) => {
   });
 });
 
-const str = JSON.stringify(flat);
+const topKeys = [...Object.entries(flat)]
+  .filter( ([key,val]) => key.split("_").length === 2 )
+  .map( ([key,val]) => {
+    const topkey = key.split("_")[0];
+    const entry = {};
+    entry[`list:${key}`] = [...Object.keys(val)];
+    entry[`name`] = `${topkey}`;
+    entry[`description`] = `${topkey} description goes here`;
+    entry[`shortname`] = `${topkey}`;
+    entry[`list:image`] = [];
+    return entry;
+  });
 
-console.log(JSON.stringify(flat));
+topKeys.forEach( (t) => flat[t.name] = t );
+const str = JSON.stringify(flat);
+console.log(str);
