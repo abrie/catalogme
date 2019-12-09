@@ -13,7 +13,7 @@ Vue.use(VueRouter)
 // Build routes using schema
 const routes = Schema.map( (i) => {
   const parts = i.key.split("_");
-  const named = parts.map( (part, idx) => idx > 0 ? `:${part}` : `${part}` );
+  const named = parts.map( (part, idx) => idx > 0 ? `:${part}` : `${part}` ); // add colons to param name
   const name = i.key;
   const path =`/${named.join('/')}`;
   return {

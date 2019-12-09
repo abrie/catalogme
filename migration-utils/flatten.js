@@ -57,5 +57,27 @@ const topKeys = [...Object.entries(flat)]
   });
 
 topKeys.forEach( (t) => flat[t.name] = t );
-const str = JSON.stringify(flat);
-console.log(str);
+
+const addPath = (obj, path) => {
+  if (obj.path) {
+    throw new Error("Path already present here, which means some item belongs to more than 1 parent ––– is that allowed?");
+  } else {
+    const next = obj.shortname ? obj.shortname : obj.code
+    obj.path = `${path}/${next}`;
+  }
+
+  [...Object.entries(obj)].forEach( ([key, value]) => {
+    if (key.startsWith("list:")) {
+      const listKey = key.split("list:")[1];
+      const list = value.map( (id) => flat[listKey][id] );
+      list.forEach( (item) => addPath(item, obj.path));
+    }
+  });
+}
+
+const dump = () => {
+  topKeys.forEach( obj => addPath(obj, ''));
+  console.log(JSON.stringify(flat));
+}
+
+dump();

@@ -1,13 +1,21 @@
 <template>
   <div class="page">
-    <div>{{name}}</div>
-    <h1>{{ params }}</h1>
+    <h1>{{name}}</h1>
+    <p>{{content[name].description}}</p>
     <ul>
-      <li v-for="field in fields" v-bind:key="field">
-        {{field}}
+      <li v-for="(field,idx) in fields" v-bind:key="idx">
+        <p v-if="isListField(field)">
+          <ul>
+            <li v-for="(obj, idx) in listField(field)" v-bind:key="idx">
+              <router-link :to=subFieldLink(obj,field)>{{obj.path}}</router-link>
+            </li>
+          </ul>
+        </p>
+        <p v-else>
+          {{field}}
+        </p>
       </li>
     </ul>
-    {{ data }}
   </div>
 </template>
 
@@ -22,8 +30,37 @@ export default {
     fields: Array,
   },
   computed: mapState({
-    data: state => state.data.data
+    content: state => state.data.data
   }),
+  methods: {
+    isListField(field) { return field.startsWith("list:") },
+    listField(field) {
+      const name = field.split("list:")[1];
+      if (name !== "image") {
+        return [...Object.values(this.content[name])];
+      } else {
+        return [];
+      }
+    },
+    subFieldLink(obj, field) {
+      const name = field.split("list:")[1];
+      const parts = name.split("_");
+      parts.reverse().pop();
+      parts.reverse();
+
+      const params = {}
+      if (obj.path) {
+        const p = obj.path.split("/");
+        p.reverse().pop();
+        p.reduce( (acc, val) => {acc[parts.pop()] = val; return acc}, params );
+      }
+
+      return {
+        name,
+        params,
+      }
+    }
+  }
 }
 </script>
 
