@@ -1,9 +1,3 @@
-hot-compile.pid
-node_modules/
-imported/
-pkg/
-bin/
+secrets.json
 migrate/
-migrated/
-data/
 
