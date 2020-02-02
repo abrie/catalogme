@@ -1,6 +1,6 @@
 #!/bin/bash
 set -ue
 
-mkdir -p $ORIGINAL_DATA
+mkdir -p $OUTPUT
 
-rsync -avp --delete $SOURCE $ORIGINAL_DATA
+rsync -avp --delete $INPUT $OUTPUT
