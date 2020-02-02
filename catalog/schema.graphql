@@ -1,0 +1,36 @@
+type Query {
+  catalog_series(id: ID!): CatalogSeries
+  catalog_series_category(id: ID!): CatalogSeriesCategory
+  catalog_series_category_part(id: ID!): CatalogSeriesCategoryPart
+  catalog_series_category_part_version(
+    id: ID!
+  ): CatalogSeriesCategoryPartVersion
+}
+
+type CatalogSeries {
+  id: ID
+  name: String
+  description: String
+  categories: [CatalogSeriesCategory!]!
+}
+
+type CatalogSeriesCategory {
+  id: ID
+  name: String
+  description: String
+  parts: [CatalogSeriesCategoryPart!]!
+}
+
+type CatalogSeriesCategoryPart {
+  id: ID
+  name: String
+  description: String
+  versions: [CatalogSeriesCategoryPartVersion!]!
+}
+
+type CatalogSeriesCategoryPartVersion {
+  id: ID
+  name: String
+  description: String
+  price: Int
+}
