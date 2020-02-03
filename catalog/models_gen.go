@@ -13,6 +13,7 @@ type CatalogSeries struct {
 
 type CatalogSeriesCategory struct {
 	ID                            *string                      `json:"id"`
+	CatalogSeriesID               *string                      `json:"catalog_series_id"`
 	Name                          *string                      `json:"name"`
 	Description                   *string                      `json:"description"`
 	Shortname                     *string                      `json:"shortname"`
@@ -22,18 +23,24 @@ type CatalogSeriesCategory struct {
 
 type CatalogSeriesCategoryPart struct {
 	ID                                   *string                             `json:"id"`
+	CatalogSeriesCategoryID              *string                             `json:"catalog_series_category_id"`
 	Name                                 *string                             `json:"name"`
 	Description                          *string                             `json:"description"`
 	Shortname                            *string                             `json:"shortname"`
 	ImageGroup                           *string                             `json:"image_group"`
+	Code                                 *string                             `json:"code"`
+	Internalcode                         *string                             `json:"internalcode"`
+	Tag                                  *string                             `json:"tag"`
+	Price                                *int                                `json:"price"`
 	CatalogSeriesCategoryPartVersionList []*CatalogSeriesCategoryPartVersion `json:"catalog_series_category_part_version_list"`
 }
 
 type CatalogSeriesCategoryPartVersion struct {
-	ID          *string `json:"id"`
-	Name        *string `json:"name"`
-	Description *string `json:"description"`
-	Shortname   *string `json:"shortname"`
-	ImageGroup  *string `json:"image_group"`
-	Price       *int    `json:"price"`
+	ID                          *string `json:"id"`
+	CatalogSeriesCategoryPartID *string `json:"catalog_series_category_part_id"`
+	Code                        *string `json:"code"`
+	Internalcode                *string `json:"internalcode"`
+	Description                 *string `json:"description"`
+	ImageGroup                  *string `json:"image_group"`
+	Price                       *int    `json:"price"`
 }

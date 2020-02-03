@@ -13,6 +13,7 @@ type CatalogSeries {
 
 type CatalogSeriesCategory {
   id: ID
+  catalog_series_id: ID
   name: String
   description: String
   shortname: String
@@ -22,18 +23,24 @@ type CatalogSeriesCategory {
 
 type CatalogSeriesCategoryPart {
   id: ID
+  catalog_series_category_id: ID
   name: String
   description: String
   shortname: String
   image_group: String
+  code: String
+  internalcode: String
+  tag: String
+  price: Int
   catalog_series_category_part_version_list: [CatalogSeriesCategoryPartVersion!]!
 }
 
 type CatalogSeriesCategoryPartVersion {
   id: ID
-  name: String
+  catalog_series_category_part_id: ID
+  code: String
+  internalcode: String
   description: String
-  shortname: String
   image_group: String
   price: Int
 }

@@ -4,6 +4,18 @@ import (
 	"testing"
 )
 
+func Test_isForeignKey(t *testing.T) {
+	name := "catalog_series_id"
+	if isForeignKey(name) != true {
+		t.Errorf("Expected '%s' to be detected as foreign key", name)
+	}
+
+	name = "description"
+	if isForeignKey(name) != false {
+		t.Errorf("Expected '%s' to NOT be detected as foreign key", name)
+	}
+}
+
 func Test_toObjName(t *testing.T) {
 	tableName := "catalog_series_category"
 	expect := "CatalogSeriesCategory"

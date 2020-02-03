@@ -14,6 +14,14 @@ models:
     fields:
       catalog_series_category_list:
         resolver: true
+  CatalogSeriesCategory:
+    fields:
+      catalog_series_category_part_list:
+        resolver: true
+  CatalogSeriesCategoryPart:
+    fields:
+      catalog_series_category_part_version_list:
+        resolver: true
 resolver:
   filename: resolver.go
   type: Resolver

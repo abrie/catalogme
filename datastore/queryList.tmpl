@@ -1,0 +1,25 @@
+func (datastore *Datastore) List_{{.Table.ObjType}}(id string) ([]*{{.Table.ObjType}}, error) {
+	var (
+		list []*{{.Table.ObjType}}
+	)
+	rows, err := datastore.DB.Query("select {{.Table.SelectParams}} from {{.Table.TableName}} where {{.ForeignKey}}=?", id)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		obj := {{.Table.ObjType}}{}
+		err := rows.Scan({{.Table.ScanParams}})
+		if err != nil {
+			log.Fatal(err)
+		}
+		list = append(list, &obj)
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return list, nil
+}
