@@ -8,7 +8,7 @@ type CatalogSeries {
   description: String
   shortname: String
   image_group: String
-  categories: [CatalogSeriesCategory!]!
+  catalog_series_category_list: [CatalogSeriesCategory!]!
 }
 
 type CatalogSeriesCategory {
@@ -17,7 +17,7 @@ type CatalogSeriesCategory {
   description: String
   shortname: String
   image_group: String
-  parts: [CatalogSeriesCategoryPart!]!
+  catalog_series_category_part_list: [CatalogSeriesCategoryPart!]!
 }
 
 type CatalogSeriesCategoryPart {
@@ -26,7 +26,7 @@ type CatalogSeriesCategoryPart {
   description: String
   shortname: String
   image_group: String
-  versions: [CatalogSeriesCategoryPartVersion!]!
+  catalog_series_category_part_version_list: [CatalogSeriesCategoryPartVersion!]!
 }
 
 type CatalogSeriesCategoryPartVersion {

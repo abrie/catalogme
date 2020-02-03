@@ -4,9 +4,7 @@ import (
 	"context"
 ) // THIS CODE IS A STARTING POINT ONLY. IT WILL NOT BE UPDATED WITH SCHEMA CHANGES.
 
-type Resolver struct {
-	Datastore *Datastore
-}
+type Resolver struct{}
 
 func (r *Resolver) CatalogSeries() CatalogSeriesResolver {
 	return &catalogSeriesResolver{r}
@@ -17,8 +15,8 @@ func (r *Resolver) Query() QueryResolver {
 
 type catalogSeriesResolver struct{ *Resolver }
 
-func (r *catalogSeriesResolver) Categories(ctx context.Context, obj *CatalogSeries) ([]*CatalogSeriesCategory, error) {
-	return r.Datastore.GetCatalogSeriesCategories(*obj.ID)
+func (r *catalogSeriesResolver) CatalogSeriesCategoryList(ctx context.Context, obj *CatalogSeries) ([]*CatalogSeriesCategory, error) {
+	return r.Datastore.GetCatalogSeriesCategoryList(*obj.ID)
 }
 
 type queryResolver struct{ *Resolver }

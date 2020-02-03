@@ -3,30 +3,30 @@
 package catalog
 
 type CatalogSeries struct {
-	ID          *string                  `json:"id"`
-	Name        *string                  `json:"name"`
-	Description *string                  `json:"description"`
-	Shortname   *string                  `json:"shortname"`
-	ImageGroup  *string                  `json:"image_group"`
-	Categories  []*CatalogSeriesCategory `json:"categories"`
+	ID                        *string                  `json:"id"`
+	Name                      *string                  `json:"name"`
+	Description               *string                  `json:"description"`
+	Shortname                 *string                  `json:"shortname"`
+	ImageGroup                *string                  `json:"image_group"`
+	CatalogSeriesCategoryList []*CatalogSeriesCategory `json:"catalog_series_category_list"`
 }
 
 type CatalogSeriesCategory struct {
-	ID          *string                      `json:"id"`
-	Name        *string                      `json:"name"`
-	Description *string                      `json:"description"`
-	Shortname   *string                      `json:"shortname"`
-	ImageGroup  *string                      `json:"image_group"`
-	Parts       []*CatalogSeriesCategoryPart `json:"parts"`
+	ID                            *string                      `json:"id"`
+	Name                          *string                      `json:"name"`
+	Description                   *string                      `json:"description"`
+	Shortname                     *string                      `json:"shortname"`
+	ImageGroup                    *string                      `json:"image_group"`
+	CatalogSeriesCategoryPartList []*CatalogSeriesCategoryPart `json:"catalog_series_category_part_list"`
 }
 
 type CatalogSeriesCategoryPart struct {
-	ID          *string                             `json:"id"`
-	Name        *string                             `json:"name"`
-	Description *string                             `json:"description"`
-	Shortname   *string                             `json:"shortname"`
-	ImageGroup  *string                             `json:"image_group"`
-	Versions    []*CatalogSeriesCategoryPartVersion `json:"versions"`
+	ID                                   *string                             `json:"id"`
+	Name                                 *string                             `json:"name"`
+	Description                          *string                             `json:"description"`
+	Shortname                            *string                             `json:"shortname"`
+	ImageGroup                           *string                             `json:"image_group"`
+	CatalogSeriesCategoryPartVersionList []*CatalogSeriesCategoryPartVersion `json:"catalog_series_category_part_version_list"`
 }
 
 type CatalogSeriesCategoryPartVersion struct {

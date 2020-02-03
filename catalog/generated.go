@@ -43,30 +43,30 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	CatalogSeries struct {
-		Categories  func(childComplexity int) int
-		Description func(childComplexity int) int
-		ID          func(childComplexity int) int
-		ImageGroup  func(childComplexity int) int
-		Name        func(childComplexity int) int
-		Shortname   func(childComplexity int) int
+		CatalogSeriesCategoryList func(childComplexity int) int
+		Description               func(childComplexity int) int
+		ID                        func(childComplexity int) int
+		ImageGroup                func(childComplexity int) int
+		Name                      func(childComplexity int) int
+		Shortname                 func(childComplexity int) int
 	}
 
 	CatalogSeriesCategory struct {
-		Description func(childComplexity int) int
-		ID          func(childComplexity int) int
-		ImageGroup  func(childComplexity int) int
-		Name        func(childComplexity int) int
-		Parts       func(childComplexity int) int
-		Shortname   func(childComplexity int) int
+		CatalogSeriesCategoryPartList func(childComplexity int) int
+		Description                   func(childComplexity int) int
+		ID                            func(childComplexity int) int
+		ImageGroup                    func(childComplexity int) int
+		Name                          func(childComplexity int) int
+		Shortname                     func(childComplexity int) int
 	}
 
 	CatalogSeriesCategoryPart struct {
-		Description func(childComplexity int) int
-		ID          func(childComplexity int) int
-		ImageGroup  func(childComplexity int) int
-		Name        func(childComplexity int) int
-		Shortname   func(childComplexity int) int
-		Versions    func(childComplexity int) int
+		CatalogSeriesCategoryPartVersionList func(childComplexity int) int
+		Description                          func(childComplexity int) int
+		ID                                   func(childComplexity int) int
+		ImageGroup                           func(childComplexity int) int
+		Name                                 func(childComplexity int) int
+		Shortname                            func(childComplexity int) int
 	}
 
 	CatalogSeriesCategoryPartVersion struct {
@@ -84,7 +84,7 @@ type ComplexityRoot struct {
 }
 
 type CatalogSeriesResolver interface {
-	Categories(ctx context.Context, obj *CatalogSeries) ([]*CatalogSeriesCategory, error)
+	CatalogSeriesCategoryList(ctx context.Context, obj *CatalogSeries) ([]*CatalogSeriesCategory, error)
 }
 type QueryResolver interface {
 	CatalogSeries(ctx context.Context, id string) (*CatalogSeries, error)
@@ -105,12 +105,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
-	case "CatalogSeries.categories":
-		if e.complexity.CatalogSeries.Categories == nil {
+	case "CatalogSeries.catalog_series_category_list":
+		if e.complexity.CatalogSeries.CatalogSeriesCategoryList == nil {
 			break
 		}
 
-		return e.complexity.CatalogSeries.Categories(childComplexity), true
+		return e.complexity.CatalogSeries.CatalogSeriesCategoryList(childComplexity), true
 
 	case "CatalogSeries.description":
 		if e.complexity.CatalogSeries.Description == nil {
@@ -147,6 +147,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.CatalogSeries.Shortname(childComplexity), true
 
+	case "CatalogSeriesCategory.catalog_series_category_part_list":
+		if e.complexity.CatalogSeriesCategory.CatalogSeriesCategoryPartList == nil {
+			break
+		}
+
+		return e.complexity.CatalogSeriesCategory.CatalogSeriesCategoryPartList(childComplexity), true
+
 	case "CatalogSeriesCategory.description":
 		if e.complexity.CatalogSeriesCategory.Description == nil {
 			break
@@ -175,19 +182,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.CatalogSeriesCategory.Name(childComplexity), true
 
-	case "CatalogSeriesCategory.parts":
-		if e.complexity.CatalogSeriesCategory.Parts == nil {
-			break
-		}
-
-		return e.complexity.CatalogSeriesCategory.Parts(childComplexity), true
-
 	case "CatalogSeriesCategory.shortname":
 		if e.complexity.CatalogSeriesCategory.Shortname == nil {
 			break
 		}
 
 		return e.complexity.CatalogSeriesCategory.Shortname(childComplexity), true
+
+	case "CatalogSeriesCategoryPart.catalog_series_category_part_version_list":
+		if e.complexity.CatalogSeriesCategoryPart.CatalogSeriesCategoryPartVersionList == nil {
+			break
+		}
+
+		return e.complexity.CatalogSeriesCategoryPart.CatalogSeriesCategoryPartVersionList(childComplexity), true
 
 	case "CatalogSeriesCategoryPart.description":
 		if e.complexity.CatalogSeriesCategoryPart.Description == nil {
@@ -223,13 +230,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.CatalogSeriesCategoryPart.Shortname(childComplexity), true
-
-	case "CatalogSeriesCategoryPart.versions":
-		if e.complexity.CatalogSeriesCategoryPart.Versions == nil {
-			break
-		}
-
-		return e.complexity.CatalogSeriesCategoryPart.Versions(childComplexity), true
 
 	case "CatalogSeriesCategoryPartVersion.description":
 		if e.complexity.CatalogSeriesCategoryPartVersion.Description == nil {
@@ -344,7 +344,7 @@ type CatalogSeries {
   description: String
   shortname: String
   image_group: String
-  categories: [CatalogSeriesCategory!]!
+  catalog_series_category_list: [CatalogSeriesCategory!]!
 }
 
 type CatalogSeriesCategory {
@@ -353,7 +353,7 @@ type CatalogSeriesCategory {
   description: String
   shortname: String
   image_group: String
-  parts: [CatalogSeriesCategoryPart!]!
+  catalog_series_category_part_list: [CatalogSeriesCategoryPart!]!
 }
 
 type CatalogSeriesCategoryPart {
@@ -362,7 +362,7 @@ type CatalogSeriesCategoryPart {
   description: String
   shortname: String
   image_group: String
-  versions: [CatalogSeriesCategoryPartVersion!]!
+  catalog_series_category_part_version_list: [CatalogSeriesCategoryPartVersion!]!
 }
 
 type CatalogSeriesCategoryPartVersion {
@@ -614,7 +614,7 @@ func (ec *executionContext) _CatalogSeries_image_group(ctx context.Context, fiel
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _CatalogSeries_categories(ctx context.Context, field graphql.CollectedField, obj *CatalogSeries) (ret graphql.Marshaler) {
+func (ec *executionContext) _CatalogSeries_catalog_series_category_list(ctx context.Context, field graphql.CollectedField, obj *CatalogSeries) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -633,7 +633,7 @@ func (ec *executionContext) _CatalogSeries_categories(ctx context.Context, field
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.CatalogSeries().Categories(rctx, obj)
+		return ec.resolvers.CatalogSeries().CatalogSeriesCategoryList(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -821,7 +821,7 @@ func (ec *executionContext) _CatalogSeriesCategory_image_group(ctx context.Conte
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _CatalogSeriesCategory_parts(ctx context.Context, field graphql.CollectedField, obj *CatalogSeriesCategory) (ret graphql.Marshaler) {
+func (ec *executionContext) _CatalogSeriesCategory_catalog_series_category_part_list(ctx context.Context, field graphql.CollectedField, obj *CatalogSeriesCategory) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -840,7 +840,7 @@ func (ec *executionContext) _CatalogSeriesCategory_parts(ctx context.Context, fi
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Parts, nil
+		return obj.CatalogSeriesCategoryPartList, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1028,7 +1028,7 @@ func (ec *executionContext) _CatalogSeriesCategoryPart_image_group(ctx context.C
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _CatalogSeriesCategoryPart_versions(ctx context.Context, field graphql.CollectedField, obj *CatalogSeriesCategoryPart) (ret graphql.Marshaler) {
+func (ec *executionContext) _CatalogSeriesCategoryPart_catalog_series_category_part_version_list(ctx context.Context, field graphql.CollectedField, obj *CatalogSeriesCategoryPart) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -1047,7 +1047,7 @@ func (ec *executionContext) _CatalogSeriesCategoryPart_versions(ctx context.Cont
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Versions, nil
+		return obj.CatalogSeriesCategoryPartVersionList, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2565,7 +2565,7 @@ func (ec *executionContext) _CatalogSeries(ctx context.Context, sel ast.Selectio
 			out.Values[i] = ec._CatalogSeries_shortname(ctx, field, obj)
 		case "image_group":
 			out.Values[i] = ec._CatalogSeries_image_group(ctx, field, obj)
-		case "categories":
+		case "catalog_series_category_list":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -2573,7 +2573,7 @@ func (ec *executionContext) _CatalogSeries(ctx context.Context, sel ast.Selectio
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._CatalogSeries_categories(ctx, field, obj)
+				res = ec._CatalogSeries_catalog_series_category_list(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -2611,8 +2611,8 @@ func (ec *executionContext) _CatalogSeriesCategory(ctx context.Context, sel ast.
 			out.Values[i] = ec._CatalogSeriesCategory_shortname(ctx, field, obj)
 		case "image_group":
 			out.Values[i] = ec._CatalogSeriesCategory_image_group(ctx, field, obj)
-		case "parts":
-			out.Values[i] = ec._CatalogSeriesCategory_parts(ctx, field, obj)
+		case "catalog_series_category_part_list":
+			out.Values[i] = ec._CatalogSeriesCategory_catalog_series_category_part_list(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -2648,8 +2648,8 @@ func (ec *executionContext) _CatalogSeriesCategoryPart(ctx context.Context, sel 
 			out.Values[i] = ec._CatalogSeriesCategoryPart_shortname(ctx, field, obj)
 		case "image_group":
 			out.Values[i] = ec._CatalogSeriesCategoryPart_image_group(ctx, field, obj)
-		case "versions":
-			out.Values[i] = ec._CatalogSeriesCategoryPart_versions(ctx, field, obj)
+		case "catalog_series_category_part_version_list":
+			out.Values[i] = ec._CatalogSeriesCategoryPart_catalog_series_category_part_version_list(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}

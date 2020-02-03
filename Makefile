@@ -15,13 +15,13 @@ sync:
 extract:
 	INPUT=$(PWD)/migrate/original OUTPUT=$(PWD)/migrate/extracted ./migration-utils/extract.sh
 
-.PHONY: index
-index:
-	INPUT=$(PWD)/migrate/extracted OUTPUT=$(PWD)/migrate/indexed ./migration-utils/index.sh
+.PHONY: canonicalize
+canonicalize:
+	INPUT=$(PWD)/migrate/extracted OUTPUT=$(PWD)/migrate/canon ./migration-utils/canonicalize.sh
 
 .PHONY: merge
 merge:
-	INPUT=$(PWD)/migrate/indexed OUTPUT=$(PWD)/migrate/merged ./migration-utils/merge.sh
+	INPUT=$(PWD)/migrate/canon OUTPUT=$(PWD)/migrate/merged ./migration-utils/merge.sh
 
 flatten:
 	node ./migration-utils/flatten.js $(PWD)/migrate/temp/merged-json/MERGED.json > $(PWD)/migrate/temp/flat-merged-json/FLAT.json

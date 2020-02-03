@@ -12,7 +12,7 @@ model:
 models:
   CatalogSeries:
     fields:
-      categories:
+      catalog_series_category_list:
         resolver: true
 resolver:
   filename: resolver.go
