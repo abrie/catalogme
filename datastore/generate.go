@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"go/format"
 	"io/ioutil"
 	"log"
 	"os"
@@ -18,11 +21,7 @@ type Table struct {
 	TableName    string
 	SelectParams string
 	ScanParams   string
-}
-
-type ListTable struct {
-	Table      Table
-	ForeignKey string
+	ForeignKey   string
 }
 
 func toObjName(tableName string) string {
@@ -47,16 +46,16 @@ func toSelectField(name string) string {
 }
 
 func toScanField(name string) string {
-	if name == "id" {
-		return "ID"
-	} else {
-		parts := strings.Split(name, "_")
-		for idx, part := range parts {
+	parts := strings.Split(name, "_")
+	for idx, part := range parts {
+		if part == "id" {
+			parts[idx] = "ID"
+		} else {
 			parts[idx] = strings.Title(part)
 		}
-
-		return strings.Join(parts, "")
 	}
+
+	return strings.Join(parts, "")
 }
 
 func toSelectParams(columns []string) string {
@@ -92,6 +91,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+	var tables []Table
 	for tableName, columns := range *schema {
 		table := Table{
 			ObjType:      toObjName(tableName),
@@ -99,29 +99,48 @@ func main() {
 			SelectParams: toSelectParams(columns),
 			ScanParams:   toScanParams(columns)}
 
-		err = templates.ExecuteTemplate(os.Stdout, "queryOne.tmpl", table)
-		if err != nil {
-			panic(err)
-		}
-
 		for _, column := range columns {
-			log.Println(column)
 			if isForeignKey(column) {
-				params := ListTable{
-					ForeignKey: column,
-					Table:      table}
-
-				err = templates.ExecuteTemplate(os.Stdout, "queryList.tmpl", params)
-				if err != nil {
-					panic(err)
-				}
+				table.ForeignKey = column
 			}
 		}
+
+		tables = append(tables, table)
 	}
+
+	var outBytes bytes.Buffer
+	outWriter := bufio.NewWriter(&outBytes)
+	err = templates.ExecuteTemplate(outWriter, "datastore.tmpl", tables)
+	if err != nil {
+		panic(err)
+	}
+
+	err = outWriter.Flush()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	formattedBytes, err := format.Source(outBytes.Bytes())
+	if err != nil {
+		writeBytes(outBytes.Bytes(), "datastore.bad")
+		log.Fatal("Formatter failed:", err)
+	}
+
+	writeBytes(formattedBytes, "datastore.go")
+}
+
+func writeBytes(bytes []byte, filename string) {
+	outFile, err := os.Create("datastore.go")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer outFile.Close()
+
+	outFile.Write(bytes)
 }
 
 func loadTemplate() (*template.Template, error) {
-	templates, err := template.ParseFiles("queryOne.tmpl", "queryList.tmpl")
+	templates, err := template.ParseFiles("datastore.tmpl")
 	if err != nil {
 		return nil, err
 	}

@@ -1,0 +1,80 @@
+package catalog
+
+import (
+	"database/sql"
+	_ "github.com/mattn/go-sqlite3"
+	"log"
+)
+
+type Datastore struct {
+	DB *sql.DB}
+
+func (datastore *Datastore) Ping() {
+	err := datastore.DB.Ping()
+	if err != nil {
+		log.Println("Datastore failure.", err)
+	}
+}
+
+func OpenDatastore(dbFile string) *Datastore {
+	db, err := sql.Open("sqlite3", dbFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return &Datastore{DB: db}
+}
+
+func (datastore *Datastore) Close() {
+	datastore.DB.Close()
+}
+
+{{ range . }}
+{{ template "QueryOne" . }}
+{{ if .ForeignKey }}
+{{ template "QueryList" . }}
+{{ end }}
+{{ end }}
+
+{{ define "QueryOne" }}
+func (datastore *Datastore) Get{{.ObjType}}(id string) (*{{.ObjType}}, error) {
+	var (
+		obj {{.ObjType}}
+	)
+
+	err := datastore.DB.QueryRow("select {{.SelectParams}} from {{.TableName}} where ROWID=?", id).Scan({{.ScanParams}})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return &obj, nil
+}
+{{ end }}
+
+{{ define "QueryList" }}
+func (datastore *Datastore) List_{{.ObjType}}(id string) ([]*{{.ObjType}}, error) {
+	var (
+		list []*{{.ObjType}}
+	)
+	rows, err := datastore.DB.Query("select {{.SelectParams}} from {{.TableName}} where {{.ForeignKey}}=?", id)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		obj := {{.ObjType}}{}
+		err := rows.Scan({{.ScanParams}})
+		if err != nil {
+			log.Fatal(err)
+		}
+		list = append(list, &obj)
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return list, nil
+}
+{{ end }}
