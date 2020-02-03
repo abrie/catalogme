@@ -1,0 +1,12 @@
+func (datastore *Datastore) Get{{.ObjType}}(rowid string) (*{{.ObjType}}, error) {
+	var (
+		obj {{.ObjType}}
+	)
+
+	err := datastore.DB.QueryRow("select {{.SelectParams}} from {{.TableName}} where ROWID=?", rowid).Scan({{.ScanParams}})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return &obj
+}
