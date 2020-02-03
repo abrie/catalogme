@@ -11,13 +11,9 @@ model:
   filename: models_gen.go
 models:
   CatalogSeries:
-    model: catalog.CatalogSeries
-  CatalogSeriesCategory:
-    model: catalog.CatalogSeriesCategory
-  CatalogSeriesCategoryPart:
-    model: catalog.CatalogSeriesCategoryPart
-  CatalogSeriesCategoryPartVersion:
-    model: catalog.CatalogSeriesCategoryPartVersion
+    fields:
+      categories:
+        resolver: true
 resolver:
   filename: resolver.go
   type: Resolver

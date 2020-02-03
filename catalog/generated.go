@@ -8,6 +8,7 @@ import (
 	"errors"
 	"strconv"
 	"sync"
+	"sync/atomic"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
@@ -33,6 +34,7 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	CatalogSeries() CatalogSeriesResolver
 	Query() QueryResolver
 }
 
@@ -44,43 +46,48 @@ type ComplexityRoot struct {
 		Categories  func(childComplexity int) int
 		Description func(childComplexity int) int
 		ID          func(childComplexity int) int
+		ImageGroup  func(childComplexity int) int
 		Name        func(childComplexity int) int
+		Shortname   func(childComplexity int) int
 	}
 
 	CatalogSeriesCategory struct {
 		Description func(childComplexity int) int
 		ID          func(childComplexity int) int
+		ImageGroup  func(childComplexity int) int
 		Name        func(childComplexity int) int
 		Parts       func(childComplexity int) int
+		Shortname   func(childComplexity int) int
 	}
 
 	CatalogSeriesCategoryPart struct {
 		Description func(childComplexity int) int
 		ID          func(childComplexity int) int
+		ImageGroup  func(childComplexity int) int
 		Name        func(childComplexity int) int
+		Shortname   func(childComplexity int) int
 		Versions    func(childComplexity int) int
 	}
 
 	CatalogSeriesCategoryPartVersion struct {
 		Description func(childComplexity int) int
 		ID          func(childComplexity int) int
+		ImageGroup  func(childComplexity int) int
 		Name        func(childComplexity int) int
 		Price       func(childComplexity int) int
+		Shortname   func(childComplexity int) int
 	}
 
 	Query struct {
-		CatalogSeries                    func(childComplexity int, id string) int
-		CatalogSeriesCategory            func(childComplexity int, id string) int
-		CatalogSeriesCategoryPart        func(childComplexity int, id string) int
-		CatalogSeriesCategoryPartVersion func(childComplexity int, id string) int
+		CatalogSeries func(childComplexity int, id string) int
 	}
 }
 
+type CatalogSeriesResolver interface {
+	Categories(ctx context.Context, obj *CatalogSeries) ([]*CatalogSeriesCategory, error)
+}
 type QueryResolver interface {
 	CatalogSeries(ctx context.Context, id string) (*CatalogSeries, error)
-	CatalogSeriesCategory(ctx context.Context, id string) (*CatalogSeriesCategory, error)
-	CatalogSeriesCategoryPart(ctx context.Context, id string) (*CatalogSeriesCategoryPart, error)
-	CatalogSeriesCategoryPartVersion(ctx context.Context, id string) (*CatalogSeriesCategoryPartVersion, error)
 }
 
 type executableSchema struct {
@@ -119,12 +126,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.CatalogSeries.ID(childComplexity), true
 
+	case "CatalogSeries.image_group":
+		if e.complexity.CatalogSeries.ImageGroup == nil {
+			break
+		}
+
+		return e.complexity.CatalogSeries.ImageGroup(childComplexity), true
+
 	case "CatalogSeries.name":
 		if e.complexity.CatalogSeries.Name == nil {
 			break
 		}
 
 		return e.complexity.CatalogSeries.Name(childComplexity), true
+
+	case "CatalogSeries.shortname":
+		if e.complexity.CatalogSeries.Shortname == nil {
+			break
+		}
+
+		return e.complexity.CatalogSeries.Shortname(childComplexity), true
 
 	case "CatalogSeriesCategory.description":
 		if e.complexity.CatalogSeriesCategory.Description == nil {
@@ -140,6 +161,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.CatalogSeriesCategory.ID(childComplexity), true
 
+	case "CatalogSeriesCategory.image_group":
+		if e.complexity.CatalogSeriesCategory.ImageGroup == nil {
+			break
+		}
+
+		return e.complexity.CatalogSeriesCategory.ImageGroup(childComplexity), true
+
 	case "CatalogSeriesCategory.name":
 		if e.complexity.CatalogSeriesCategory.Name == nil {
 			break
@@ -153,6 +181,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.CatalogSeriesCategory.Parts(childComplexity), true
+
+	case "CatalogSeriesCategory.shortname":
+		if e.complexity.CatalogSeriesCategory.Shortname == nil {
+			break
+		}
+
+		return e.complexity.CatalogSeriesCategory.Shortname(childComplexity), true
 
 	case "CatalogSeriesCategoryPart.description":
 		if e.complexity.CatalogSeriesCategoryPart.Description == nil {
@@ -168,12 +203,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.CatalogSeriesCategoryPart.ID(childComplexity), true
 
+	case "CatalogSeriesCategoryPart.image_group":
+		if e.complexity.CatalogSeriesCategoryPart.ImageGroup == nil {
+			break
+		}
+
+		return e.complexity.CatalogSeriesCategoryPart.ImageGroup(childComplexity), true
+
 	case "CatalogSeriesCategoryPart.name":
 		if e.complexity.CatalogSeriesCategoryPart.Name == nil {
 			break
 		}
 
 		return e.complexity.CatalogSeriesCategoryPart.Name(childComplexity), true
+
+	case "CatalogSeriesCategoryPart.shortname":
+		if e.complexity.CatalogSeriesCategoryPart.Shortname == nil {
+			break
+		}
+
+		return e.complexity.CatalogSeriesCategoryPart.Shortname(childComplexity), true
 
 	case "CatalogSeriesCategoryPart.versions":
 		if e.complexity.CatalogSeriesCategoryPart.Versions == nil {
@@ -196,6 +245,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.CatalogSeriesCategoryPartVersion.ID(childComplexity), true
 
+	case "CatalogSeriesCategoryPartVersion.image_group":
+		if e.complexity.CatalogSeriesCategoryPartVersion.ImageGroup == nil {
+			break
+		}
+
+		return e.complexity.CatalogSeriesCategoryPartVersion.ImageGroup(childComplexity), true
+
 	case "CatalogSeriesCategoryPartVersion.name":
 		if e.complexity.CatalogSeriesCategoryPartVersion.Name == nil {
 			break
@@ -210,6 +266,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.CatalogSeriesCategoryPartVersion.Price(childComplexity), true
 
+	case "CatalogSeriesCategoryPartVersion.shortname":
+		if e.complexity.CatalogSeriesCategoryPartVersion.Shortname == nil {
+			break
+		}
+
+		return e.complexity.CatalogSeriesCategoryPartVersion.Shortname(childComplexity), true
+
 	case "Query.catalog_series":
 		if e.complexity.Query.CatalogSeries == nil {
 			break
@@ -221,42 +284,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.CatalogSeries(childComplexity, args["id"].(string)), true
-
-	case "Query.catalog_series_category":
-		if e.complexity.Query.CatalogSeriesCategory == nil {
-			break
-		}
-
-		args, err := ec.field_Query_catalog_series_category_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.CatalogSeriesCategory(childComplexity, args["id"].(string)), true
-
-	case "Query.catalog_series_category_part":
-		if e.complexity.Query.CatalogSeriesCategoryPart == nil {
-			break
-		}
-
-		args, err := ec.field_Query_catalog_series_category_part_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.CatalogSeriesCategoryPart(childComplexity, args["id"].(string)), true
-
-	case "Query.catalog_series_category_part_version":
-		if e.complexity.Query.CatalogSeriesCategoryPartVersion == nil {
-			break
-		}
-
-		args, err := ec.field_Query_catalog_series_category_part_version_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.CatalogSeriesCategoryPartVersion(childComplexity, args["id"].(string)), true
 
 	}
 	return 0, false
@@ -309,17 +336,14 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 var parsedSchema = gqlparser.MustLoadSchema(
 	&ast.Source{Name: "schema.graphql", Input: `type Query {
   catalog_series(id: ID!): CatalogSeries
-  catalog_series_category(id: ID!): CatalogSeriesCategory
-  catalog_series_category_part(id: ID!): CatalogSeriesCategoryPart
-  catalog_series_category_part_version(
-    id: ID!
-  ): CatalogSeriesCategoryPartVersion
 }
 
 type CatalogSeries {
   id: ID
   name: String
   description: String
+  shortname: String
+  image_group: String
   categories: [CatalogSeriesCategory!]!
 }
 
@@ -327,6 +351,8 @@ type CatalogSeriesCategory {
   id: ID
   name: String
   description: String
+  shortname: String
+  image_group: String
   parts: [CatalogSeriesCategoryPart!]!
 }
 
@@ -334,6 +360,8 @@ type CatalogSeriesCategoryPart {
   id: ID
   name: String
   description: String
+  shortname: String
+  image_group: String
   versions: [CatalogSeriesCategoryPartVersion!]!
 }
 
@@ -341,6 +369,8 @@ type CatalogSeriesCategoryPartVersion {
   id: ID
   name: String
   description: String
+  shortname: String
+  image_group: String
   price: Int
 }
 `},
@@ -365,48 +395,6 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 }
 
 func (ec *executionContext) field_Query_catalog_series_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["id"]; ok {
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["id"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_catalog_series_category_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["id"]; ok {
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["id"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_catalog_series_category_part_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["id"]; ok {
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["id"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_catalog_series_category_part_version_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -484,10 +472,10 @@ func (ec *executionContext) _CatalogSeries_id(ctx context.Context, field graphql
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOID2string(ctx, field.Selections, res)
+	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _CatalogSeries_name(ctx context.Context, field graphql.CollectedField, obj *CatalogSeries) (ret graphql.Marshaler) {
@@ -518,10 +506,10 @@ func (ec *executionContext) _CatalogSeries_name(ctx context.Context, field graph
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _CatalogSeries_description(ctx context.Context, field graphql.CollectedField, obj *CatalogSeries) (ret graphql.Marshaler) {
@@ -552,13 +540,13 @@ func (ec *executionContext) _CatalogSeries_description(ctx context.Context, fiel
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _CatalogSeries_categories(ctx context.Context, field graphql.CollectedField, obj *CatalogSeries) (ret graphql.Marshaler) {
+func (ec *executionContext) _CatalogSeries_shortname(ctx context.Context, field graphql.CollectedField, obj *CatalogSeries) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -577,7 +565,75 @@ func (ec *executionContext) _CatalogSeries_categories(ctx context.Context, field
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Categories, nil
+		return obj.Shortname, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CatalogSeries_image_group(ctx context.Context, field graphql.CollectedField, obj *CatalogSeries) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "CatalogSeries",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ImageGroup, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CatalogSeries_categories(ctx context.Context, field graphql.CollectedField, obj *CatalogSeries) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "CatalogSeries",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.CatalogSeries().Categories(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -589,10 +645,10 @@ func (ec *executionContext) _CatalogSeries_categories(ctx context.Context, field
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]CatalogSeriesCategory)
+	res := resTmp.([]*CatalogSeriesCategory)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNCatalogSeriesCategory2ᚕcatalogᚐCatalogSeriesCategoryᚄ(ctx, field.Selections, res)
+	return ec.marshalNCatalogSeriesCategory2ᚕᚖcatalogᚐCatalogSeriesCategoryᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _CatalogSeriesCategory_id(ctx context.Context, field graphql.CollectedField, obj *CatalogSeriesCategory) (ret graphql.Marshaler) {
@@ -623,10 +679,10 @@ func (ec *executionContext) _CatalogSeriesCategory_id(ctx context.Context, field
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOID2string(ctx, field.Selections, res)
+	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _CatalogSeriesCategory_name(ctx context.Context, field graphql.CollectedField, obj *CatalogSeriesCategory) (ret graphql.Marshaler) {
@@ -657,10 +713,10 @@ func (ec *executionContext) _CatalogSeriesCategory_name(ctx context.Context, fie
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _CatalogSeriesCategory_description(ctx context.Context, field graphql.CollectedField, obj *CatalogSeriesCategory) (ret graphql.Marshaler) {
@@ -691,10 +747,78 @@ func (ec *executionContext) _CatalogSeriesCategory_description(ctx context.Conte
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CatalogSeriesCategory_shortname(ctx context.Context, field graphql.CollectedField, obj *CatalogSeriesCategory) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "CatalogSeriesCategory",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Shortname, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CatalogSeriesCategory_image_group(ctx context.Context, field graphql.CollectedField, obj *CatalogSeriesCategory) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "CatalogSeriesCategory",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ImageGroup, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _CatalogSeriesCategory_parts(ctx context.Context, field graphql.CollectedField, obj *CatalogSeriesCategory) (ret graphql.Marshaler) {
@@ -728,10 +852,10 @@ func (ec *executionContext) _CatalogSeriesCategory_parts(ctx context.Context, fi
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]CatalogSeriesCategoryPart)
+	res := resTmp.([]*CatalogSeriesCategoryPart)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNCatalogSeriesCategoryPart2ᚕcatalogᚐCatalogSeriesCategoryPartᚄ(ctx, field.Selections, res)
+	return ec.marshalNCatalogSeriesCategoryPart2ᚕᚖcatalogᚐCatalogSeriesCategoryPartᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _CatalogSeriesCategoryPart_id(ctx context.Context, field graphql.CollectedField, obj *CatalogSeriesCategoryPart) (ret graphql.Marshaler) {
@@ -762,10 +886,10 @@ func (ec *executionContext) _CatalogSeriesCategoryPart_id(ctx context.Context, f
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOID2string(ctx, field.Selections, res)
+	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _CatalogSeriesCategoryPart_name(ctx context.Context, field graphql.CollectedField, obj *CatalogSeriesCategoryPart) (ret graphql.Marshaler) {
@@ -796,10 +920,10 @@ func (ec *executionContext) _CatalogSeriesCategoryPart_name(ctx context.Context,
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _CatalogSeriesCategoryPart_description(ctx context.Context, field graphql.CollectedField, obj *CatalogSeriesCategoryPart) (ret graphql.Marshaler) {
@@ -830,10 +954,78 @@ func (ec *executionContext) _CatalogSeriesCategoryPart_description(ctx context.C
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CatalogSeriesCategoryPart_shortname(ctx context.Context, field graphql.CollectedField, obj *CatalogSeriesCategoryPart) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "CatalogSeriesCategoryPart",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Shortname, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CatalogSeriesCategoryPart_image_group(ctx context.Context, field graphql.CollectedField, obj *CatalogSeriesCategoryPart) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "CatalogSeriesCategoryPart",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ImageGroup, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _CatalogSeriesCategoryPart_versions(ctx context.Context, field graphql.CollectedField, obj *CatalogSeriesCategoryPart) (ret graphql.Marshaler) {
@@ -867,10 +1059,10 @@ func (ec *executionContext) _CatalogSeriesCategoryPart_versions(ctx context.Cont
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]CatalogSeriesCategoryPartVersion)
+	res := resTmp.([]*CatalogSeriesCategoryPartVersion)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNCatalogSeriesCategoryPartVersion2ᚕcatalogᚐCatalogSeriesCategoryPartVersionᚄ(ctx, field.Selections, res)
+	return ec.marshalNCatalogSeriesCategoryPartVersion2ᚕᚖcatalogᚐCatalogSeriesCategoryPartVersionᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _CatalogSeriesCategoryPartVersion_id(ctx context.Context, field graphql.CollectedField, obj *CatalogSeriesCategoryPartVersion) (ret graphql.Marshaler) {
@@ -901,10 +1093,10 @@ func (ec *executionContext) _CatalogSeriesCategoryPartVersion_id(ctx context.Con
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOID2string(ctx, field.Selections, res)
+	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _CatalogSeriesCategoryPartVersion_name(ctx context.Context, field graphql.CollectedField, obj *CatalogSeriesCategoryPartVersion) (ret graphql.Marshaler) {
@@ -935,10 +1127,10 @@ func (ec *executionContext) _CatalogSeriesCategoryPartVersion_name(ctx context.C
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _CatalogSeriesCategoryPartVersion_description(ctx context.Context, field graphql.CollectedField, obj *CatalogSeriesCategoryPartVersion) (ret graphql.Marshaler) {
@@ -969,10 +1161,78 @@ func (ec *executionContext) _CatalogSeriesCategoryPartVersion_description(ctx co
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CatalogSeriesCategoryPartVersion_shortname(ctx context.Context, field graphql.CollectedField, obj *CatalogSeriesCategoryPartVersion) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "CatalogSeriesCategoryPartVersion",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Shortname, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CatalogSeriesCategoryPartVersion_image_group(ctx context.Context, field graphql.CollectedField, obj *CatalogSeriesCategoryPartVersion) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "CatalogSeriesCategoryPartVersion",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ImageGroup, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _CatalogSeriesCategoryPartVersion_price(ctx context.Context, field graphql.CollectedField, obj *CatalogSeriesCategoryPartVersion) (ret graphql.Marshaler) {
@@ -1003,10 +1263,10 @@ func (ec *executionContext) _CatalogSeriesCategoryPartVersion_price(ctx context.
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(*int)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOInt2int(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_catalog_series(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1048,129 +1308,6 @@ func (ec *executionContext) _Query_catalog_series(ctx context.Context, field gra
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalOCatalogSeries2ᚖcatalogᚐCatalogSeries(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Query_catalog_series_category(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-		ec.Tracer.EndFieldExecution(ctx)
-	}()
-	rctx := &graphql.ResolverContext{
-		Object:   "Query",
-		Field:    field,
-		Args:     nil,
-		IsMethod: true,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query_catalog_series_category_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	rctx.Args = args
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().CatalogSeriesCategory(rctx, args["id"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*CatalogSeriesCategory)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOCatalogSeriesCategory2ᚖcatalogᚐCatalogSeriesCategory(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Query_catalog_series_category_part(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-		ec.Tracer.EndFieldExecution(ctx)
-	}()
-	rctx := &graphql.ResolverContext{
-		Object:   "Query",
-		Field:    field,
-		Args:     nil,
-		IsMethod: true,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query_catalog_series_category_part_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	rctx.Args = args
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().CatalogSeriesCategoryPart(rctx, args["id"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*CatalogSeriesCategoryPart)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOCatalogSeriesCategoryPart2ᚖcatalogᚐCatalogSeriesCategoryPart(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Query_catalog_series_category_part_version(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-		ec.Tracer.EndFieldExecution(ctx)
-	}()
-	rctx := &graphql.ResolverContext{
-		Object:   "Query",
-		Field:    field,
-		Args:     nil,
-		IsMethod: true,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query_catalog_series_category_part_version_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	rctx.Args = args
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().CatalogSeriesCategoryPartVersion(rctx, args["id"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*CatalogSeriesCategoryPartVersion)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOCatalogSeriesCategoryPartVersion2ᚖcatalogᚐCatalogSeriesCategoryPartVersion(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2424,11 +2561,24 @@ func (ec *executionContext) _CatalogSeries(ctx context.Context, sel ast.Selectio
 			out.Values[i] = ec._CatalogSeries_name(ctx, field, obj)
 		case "description":
 			out.Values[i] = ec._CatalogSeries_description(ctx, field, obj)
+		case "shortname":
+			out.Values[i] = ec._CatalogSeries_shortname(ctx, field, obj)
+		case "image_group":
+			out.Values[i] = ec._CatalogSeries_image_group(ctx, field, obj)
 		case "categories":
-			out.Values[i] = ec._CatalogSeries_categories(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CatalogSeries_categories(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -2457,6 +2607,10 @@ func (ec *executionContext) _CatalogSeriesCategory(ctx context.Context, sel ast.
 			out.Values[i] = ec._CatalogSeriesCategory_name(ctx, field, obj)
 		case "description":
 			out.Values[i] = ec._CatalogSeriesCategory_description(ctx, field, obj)
+		case "shortname":
+			out.Values[i] = ec._CatalogSeriesCategory_shortname(ctx, field, obj)
+		case "image_group":
+			out.Values[i] = ec._CatalogSeriesCategory_image_group(ctx, field, obj)
 		case "parts":
 			out.Values[i] = ec._CatalogSeriesCategory_parts(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -2490,6 +2644,10 @@ func (ec *executionContext) _CatalogSeriesCategoryPart(ctx context.Context, sel 
 			out.Values[i] = ec._CatalogSeriesCategoryPart_name(ctx, field, obj)
 		case "description":
 			out.Values[i] = ec._CatalogSeriesCategoryPart_description(ctx, field, obj)
+		case "shortname":
+			out.Values[i] = ec._CatalogSeriesCategoryPart_shortname(ctx, field, obj)
+		case "image_group":
+			out.Values[i] = ec._CatalogSeriesCategoryPart_image_group(ctx, field, obj)
 		case "versions":
 			out.Values[i] = ec._CatalogSeriesCategoryPart_versions(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -2523,6 +2681,10 @@ func (ec *executionContext) _CatalogSeriesCategoryPartVersion(ctx context.Contex
 			out.Values[i] = ec._CatalogSeriesCategoryPartVersion_name(ctx, field, obj)
 		case "description":
 			out.Values[i] = ec._CatalogSeriesCategoryPartVersion_description(ctx, field, obj)
+		case "shortname":
+			out.Values[i] = ec._CatalogSeriesCategoryPartVersion_shortname(ctx, field, obj)
+		case "image_group":
+			out.Values[i] = ec._CatalogSeriesCategoryPartVersion_image_group(ctx, field, obj)
 		case "price":
 			out.Values[i] = ec._CatalogSeriesCategoryPartVersion_price(ctx, field, obj)
 		default:
@@ -2560,39 +2722,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_catalog_series(ctx, field)
-				return res
-			})
-		case "catalog_series_category":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_catalog_series_category(ctx, field)
-				return res
-			})
-		case "catalog_series_category_part":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_catalog_series_category_part(ctx, field)
-				return res
-			})
-		case "catalog_series_category_part_version":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_catalog_series_category_part_version(ctx, field)
 				return res
 			})
 		case "__type":
@@ -2873,7 +3002,7 @@ func (ec *executionContext) marshalNCatalogSeriesCategory2catalogᚐCatalogSerie
 	return ec._CatalogSeriesCategory(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNCatalogSeriesCategory2ᚕcatalogᚐCatalogSeriesCategoryᚄ(ctx context.Context, sel ast.SelectionSet, v []CatalogSeriesCategory) graphql.Marshaler {
+func (ec *executionContext) marshalNCatalogSeriesCategory2ᚕᚖcatalogᚐCatalogSeriesCategoryᚄ(ctx context.Context, sel ast.SelectionSet, v []*CatalogSeriesCategory) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -2897,7 +3026,7 @@ func (ec *executionContext) marshalNCatalogSeriesCategory2ᚕcatalogᚐCatalogSe
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNCatalogSeriesCategory2catalogᚐCatalogSeriesCategory(ctx, sel, v[i])
+			ret[i] = ec.marshalNCatalogSeriesCategory2ᚖcatalogᚐCatalogSeriesCategory(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -2908,13 +3037,23 @@ func (ec *executionContext) marshalNCatalogSeriesCategory2ᚕcatalogᚐCatalogSe
 	}
 	wg.Wait()
 	return ret
+}
+
+func (ec *executionContext) marshalNCatalogSeriesCategory2ᚖcatalogᚐCatalogSeriesCategory(ctx context.Context, sel ast.SelectionSet, v *CatalogSeriesCategory) graphql.Marshaler {
+	if v == nil {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._CatalogSeriesCategory(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNCatalogSeriesCategoryPart2catalogᚐCatalogSeriesCategoryPart(ctx context.Context, sel ast.SelectionSet, v CatalogSeriesCategoryPart) graphql.Marshaler {
 	return ec._CatalogSeriesCategoryPart(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNCatalogSeriesCategoryPart2ᚕcatalogᚐCatalogSeriesCategoryPartᚄ(ctx context.Context, sel ast.SelectionSet, v []CatalogSeriesCategoryPart) graphql.Marshaler {
+func (ec *executionContext) marshalNCatalogSeriesCategoryPart2ᚕᚖcatalogᚐCatalogSeriesCategoryPartᚄ(ctx context.Context, sel ast.SelectionSet, v []*CatalogSeriesCategoryPart) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -2938,7 +3077,7 @@ func (ec *executionContext) marshalNCatalogSeriesCategoryPart2ᚕcatalogᚐCatal
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNCatalogSeriesCategoryPart2catalogᚐCatalogSeriesCategoryPart(ctx, sel, v[i])
+			ret[i] = ec.marshalNCatalogSeriesCategoryPart2ᚖcatalogᚐCatalogSeriesCategoryPart(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -2949,13 +3088,23 @@ func (ec *executionContext) marshalNCatalogSeriesCategoryPart2ᚕcatalogᚐCatal
 	}
 	wg.Wait()
 	return ret
+}
+
+func (ec *executionContext) marshalNCatalogSeriesCategoryPart2ᚖcatalogᚐCatalogSeriesCategoryPart(ctx context.Context, sel ast.SelectionSet, v *CatalogSeriesCategoryPart) graphql.Marshaler {
+	if v == nil {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._CatalogSeriesCategoryPart(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNCatalogSeriesCategoryPartVersion2catalogᚐCatalogSeriesCategoryPartVersion(ctx context.Context, sel ast.SelectionSet, v CatalogSeriesCategoryPartVersion) graphql.Marshaler {
 	return ec._CatalogSeriesCategoryPartVersion(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNCatalogSeriesCategoryPartVersion2ᚕcatalogᚐCatalogSeriesCategoryPartVersionᚄ(ctx context.Context, sel ast.SelectionSet, v []CatalogSeriesCategoryPartVersion) graphql.Marshaler {
+func (ec *executionContext) marshalNCatalogSeriesCategoryPartVersion2ᚕᚖcatalogᚐCatalogSeriesCategoryPartVersionᚄ(ctx context.Context, sel ast.SelectionSet, v []*CatalogSeriesCategoryPartVersion) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -2979,7 +3128,7 @@ func (ec *executionContext) marshalNCatalogSeriesCategoryPartVersion2ᚕcatalog�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNCatalogSeriesCategoryPartVersion2catalogᚐCatalogSeriesCategoryPartVersion(ctx, sel, v[i])
+			ret[i] = ec.marshalNCatalogSeriesCategoryPartVersion2ᚖcatalogᚐCatalogSeriesCategoryPartVersion(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -2990,6 +3139,16 @@ func (ec *executionContext) marshalNCatalogSeriesCategoryPartVersion2ᚕcatalog�
 	}
 	wg.Wait()
 	return ret
+}
+
+func (ec *executionContext) marshalNCatalogSeriesCategoryPartVersion2ᚖcatalogᚐCatalogSeriesCategoryPartVersion(ctx context.Context, sel ast.SelectionSet, v *CatalogSeriesCategoryPartVersion) graphql.Marshaler {
+	if v == nil {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._CatalogSeriesCategoryPartVersion(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
@@ -3280,39 +3439,6 @@ func (ec *executionContext) marshalOCatalogSeries2ᚖcatalogᚐCatalogSeries(ctx
 	return ec._CatalogSeries(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOCatalogSeriesCategory2catalogᚐCatalogSeriesCategory(ctx context.Context, sel ast.SelectionSet, v CatalogSeriesCategory) graphql.Marshaler {
-	return ec._CatalogSeriesCategory(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalOCatalogSeriesCategory2ᚖcatalogᚐCatalogSeriesCategory(ctx context.Context, sel ast.SelectionSet, v *CatalogSeriesCategory) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._CatalogSeriesCategory(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalOCatalogSeriesCategoryPart2catalogᚐCatalogSeriesCategoryPart(ctx context.Context, sel ast.SelectionSet, v CatalogSeriesCategoryPart) graphql.Marshaler {
-	return ec._CatalogSeriesCategoryPart(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalOCatalogSeriesCategoryPart2ᚖcatalogᚐCatalogSeriesCategoryPart(ctx context.Context, sel ast.SelectionSet, v *CatalogSeriesCategoryPart) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._CatalogSeriesCategoryPart(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalOCatalogSeriesCategoryPartVersion2catalogᚐCatalogSeriesCategoryPartVersion(ctx context.Context, sel ast.SelectionSet, v CatalogSeriesCategoryPartVersion) graphql.Marshaler {
-	return ec._CatalogSeriesCategoryPartVersion(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalOCatalogSeriesCategoryPartVersion2ᚖcatalogᚐCatalogSeriesCategoryPartVersion(ctx context.Context, sel ast.SelectionSet, v *CatalogSeriesCategoryPartVersion) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._CatalogSeriesCategoryPartVersion(ctx, sel, v)
-}
-
 func (ec *executionContext) unmarshalOID2string(ctx context.Context, v interface{}) (string, error) {
 	return graphql.UnmarshalID(v)
 }
@@ -3321,12 +3447,42 @@ func (ec *executionContext) marshalOID2string(ctx context.Context, sel ast.Selec
 	return graphql.MarshalID(v)
 }
 
+func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalOID2string(ctx, v)
+	return &res, err
+}
+
+func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec.marshalOID2string(ctx, sel, *v)
+}
+
 func (ec *executionContext) unmarshalOInt2int(ctx context.Context, v interface{}) (int, error) {
 	return graphql.UnmarshalInt(v)
 }
 
 func (ec *executionContext) marshalOInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
 	return graphql.MarshalInt(v)
+}
+
+func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalOInt2int(ctx, v)
+	return &res, err
+}
+
+func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.SelectionSet, v *int) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec.marshalOInt2int(ctx, sel, *v)
 }
 
 func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {

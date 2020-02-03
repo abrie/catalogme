@@ -5,6 +5,7 @@ SOURCE=$(shell jq -r .source secrets/secrets.json)
 clean:
 	@-rm -rf $(PWD)/migrate/extracted
 	@-rm -rf $(PWD)/migrate/indexed
+	@-rm -rf $(PWD)/migrate/merged
 
 .PHONY: sync
 sync:
@@ -18,10 +19,9 @@ extract:
 index:
 	INPUT=$(PWD)/migrate/extracted OUTPUT=$(PWD)/migrate/indexed ./migration-utils/index.sh
 
-	INPUT=$(PWD)/migrate
 .PHONY: merge
 merge:
-	INPUT=$(PWD)/migrate/extracted OUTPUT=$(PWD)/migrate/merged ./migration-utils/merge.sh
+	INPUT=$(PWD)/migrate/indexed OUTPUT=$(PWD)/migrate/merged ./migration-utils/merge.sh
 
 flatten:
 	node ./migration-utils/flatten.js $(PWD)/migrate/temp/merged-json/MERGED.json > $(PWD)/migrate/temp/flat-merged-json/FLAT.json
