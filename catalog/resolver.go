@@ -1,5 +1,7 @@
 package catalog
 
+//go:generate go run github.com/99designs/gqlgen
+
 import (
 	"context"
 ) // THIS CODE IS A STARTING POINT ONLY. IT WILL NOT BE UPDATED WITH SCHEMA CHANGES.
@@ -16,6 +18,9 @@ func (r *Resolver) CatalogSeriesCategory() CatalogSeriesCategoryResolver {
 }
 func (r *Resolver) CatalogSeriesCategoryPart() CatalogSeriesCategoryPartResolver {
 	return &catalogSeriesCategoryPartResolver{r}
+}
+func (r *Resolver) PortfolioGroup() PortfolioGroupResolver {
+	return &portfolioGroupResolver{r}
 }
 func (r *Resolver) Query() QueryResolver {
 	return &queryResolver{r}
@@ -37,6 +42,12 @@ type catalogSeriesCategoryPartResolver struct{ *Resolver }
 
 func (r *catalogSeriesCategoryPartResolver) CatalogSeriesCategoryPartVersionList(ctx context.Context, obj *CatalogSeriesCategoryPart) ([]*CatalogSeriesCategoryPartVersion, error) {
 	return r.Datastore.List_CatalogSeriesCategoryPartVersion(*obj.ID)
+}
+
+type portfolioGroupResolver struct{ *Resolver }
+
+func (r *portfolioGroupResolver) PortfolioGroupItemList(ctx context.Context, obj *PortfolioGroup) ([]*PortfolioGroupItem, error) {
+	return r.Datastore.List_PortfolioGroupItem(*obj.ID)
 }
 
 type queryResolver struct{ *Resolver }

@@ -37,6 +37,7 @@ type ResolverRoot interface {
 	CatalogSeries() CatalogSeriesResolver
 	CatalogSeriesCategory() CatalogSeriesCategoryResolver
 	CatalogSeriesCategoryPart() CatalogSeriesCategoryPartResolver
+	PortfolioGroup() PortfolioGroupResolver
 	Query() QueryResolver
 }
 
@@ -162,6 +163,9 @@ type CatalogSeriesCategoryResolver interface {
 }
 type CatalogSeriesCategoryPartResolver interface {
 	CatalogSeriesCategoryPartVersionList(ctx context.Context, obj *CatalogSeriesCategoryPart) ([]*CatalogSeriesCategoryPartVersion, error)
+}
+type PortfolioGroupResolver interface {
+	PortfolioGroupItemList(ctx context.Context, obj *PortfolioGroup) ([]*PortfolioGroupItem, error)
 }
 type QueryResolver interface {
 	CatalogSeries(ctx context.Context, id string) (*CatalogSeries, error)
@@ -2762,13 +2766,13 @@ func (ec *executionContext) _PortfolioGroup_portfolio_group_item_list(ctx contex
 		Object:   "PortfolioGroup",
 		Field:    field,
 		Args:     nil,
-		IsMethod: false,
+		IsMethod: true,
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.PortfolioGroupItemList, nil
+		return ec.resolvers.PortfolioGroup().PortfolioGroupItemList(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5073,10 +5077,19 @@ func (ec *executionContext) _PortfolioGroup(ctx context.Context, sel ast.Selecti
 		case "shortname":
 			out.Values[i] = ec._PortfolioGroup_shortname(ctx, field, obj)
 		case "portfolio_group_item_list":
-			out.Values[i] = ec._PortfolioGroup_portfolio_group_item_list(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._PortfolioGroup_portfolio_group_item_list(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

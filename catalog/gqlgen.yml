@@ -22,6 +22,10 @@ models:
     fields:
       catalog_series_category_part_version_list:
         resolver: true
+  PortfolioGroup:
+    fields:
+      portfolio_group_item_list:
+        resolver: true
 resolver:
   filename: resolver.go
   type: Resolver
