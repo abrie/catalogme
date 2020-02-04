@@ -1,0 +1,6 @@
+ATTACH DATABASE "{{.Input}}" as input;
+{{ range .Tables }}
+CREATE TABLE {{.Name}} ( "id" text, {{CreateFields .Table}} );
+INSERT INTO {{.Name}} ( "id", {{InsertFields .Table}} )
+SELECT "ROWID", {{InsertFields .Table}} FROM input.{{.Name}};
+{{ end }}
