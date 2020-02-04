@@ -16,14 +16,6 @@ import (
 type Columns []string
 type Schema map[string]Columns
 
-type Table struct {
-	ObjType      string
-	TableName    string
-	SelectParams string
-	ScanParams   string
-	ForeignKey   string
-}
-
 func toObjName(tableName string) string {
 	parts := strings.Split(tableName, "_")
 	for idx, part := range parts {
@@ -80,18 +72,34 @@ func isForeignKey(name string) bool {
 	return strings.HasSuffix(name, "_id")
 }
 
-func main() {
-	schema, err := loadSchema("../migrate/merged/merged.json")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	templates, err := loadTemplate()
-	if err != nil {
-		log.Fatal(err)
+func generateGQLSchema(schema *Schema) {
+	type Table struct {
+		ObjType string
+		Fields  []string
 	}
 
 	var tables []Table
+	for tableName, columns := range *schema {
+		table := Table{
+			ObjType: toObjName(tableName),
+			Fields:  columns,
+		}
+
+		tables = append(tables, table)
+	}
+}
+
+func generateLoaderCode(schema *Schema) {
+	type Table struct {
+		ObjType      string
+		TableName    string
+		SelectParams string
+		ScanParams   string
+		ForeignKey   string
+	}
+
+	var tables []Table
+
 	for tableName, columns := range *schema {
 		table := Table{
 			ObjType:      toObjName(tableName),
@@ -108,14 +116,7 @@ func main() {
 		tables = append(tables, table)
 	}
 
-	var outBytes bytes.Buffer
-	outWriter := bufio.NewWriter(&outBytes)
-	err = templates.ExecuteTemplate(outWriter, "datastore.tmpl", tables)
-	if err != nil {
-		panic(err)
-	}
-
-	err = outWriter.Flush()
+	outBytes, err := executeTemplate("datastore.tmpl", tables)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -129,6 +130,42 @@ func main() {
 	writeBytes(formattedBytes, "datastore.go")
 }
 
+func executeTemplate(name string, data interface{}) (*bytes.Buffer, error) {
+	templates, err := template.ParseFiles(name)
+	if err != nil {
+		return nil, err
+	}
+
+	tmpl := templates.Lookup(name)
+	if tmpl == nil {
+		return nil, fmt.Errorf("No template named %s", name)
+	}
+
+	var outBytes bytes.Buffer
+	writer := bufio.NewWriter(&outBytes)
+	err = tmpl.Execute(writer, data)
+	if err != nil {
+		return nil, err
+	}
+
+	err = writer.Flush()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return &outBytes, nil
+}
+
+func main() {
+	schema, err := loadSchema("../migrate/merged/merged.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	generateLoaderCode(schema)
+	generateGQLSchema(schema)
+}
+
 func writeBytes(bytes []byte, filename string) {
 	outFile, err := os.Create("datastore.go")
 	if err != nil {
@@ -139,7 +176,16 @@ func writeBytes(bytes []byte, filename string) {
 	outFile.Write(bytes)
 }
 
-func loadTemplate() (*template.Template, error) {
+func loadSchemaTemplate() (*template.Template, error) {
+	templates, err := template.ParseFiles("schema.graphql.tmpl")
+	if err != nil {
+		return nil, err
+	}
+
+	return templates, nil
+}
+
+func loadCodeTemplate() (*template.Template, error) {
 	templates, err := template.ParseFiles("datastore.tmpl")
 	if err != nil {
 		return nil, err
