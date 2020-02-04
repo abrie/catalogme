@@ -78,15 +78,54 @@ func generateGQLSchema(schema *Schema) {
 		Fields  []string
 	}
 
-	var tables []Table
+	tables := map[string]Table{}
 	for tableName, columns := range *schema {
 		table := Table{
 			ObjType: toObjName(tableName),
 			Fields:  columns,
 		}
 
-		tables = append(tables, table)
+		tables[tableName] = table
 	}
+
+	for tableName, table := range tables {
+		for _, field := range table.Fields {
+			if strings.HasSuffix(field, "_id") {
+				parentName := strings.TrimSuffix(field, "_id")
+				parent := tables[parentName]
+				parent.Fields = append(parent.Fields, tableName+"_list")
+				tables[parentName] = parent
+			}
+		}
+	}
+
+	list := []Table{}
+	for _, val := range tables {
+		list = append(list, val)
+	}
+
+	funcs := template.FuncMap{
+		"GetFieldType": func(name string) string {
+			if strings.HasSuffix(name, "_list") {
+				return fmt.Sprintf("[%s!]!", toObjName(strings.TrimSuffix(name, "_list")))
+			} else {
+				switch name {
+				case "id":
+					return "ID"
+				case "price":
+					return "Float"
+				default:
+					return "String"
+				}
+			}
+		},
+	}
+	outBytes, err := executeTemplate("schema.graphql.tmpl", list, funcs)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	writeBytes(outBytes.Bytes(), "output/schema.graphql")
 }
 
 func generateLoaderCode(schema *Schema) {
@@ -116,22 +155,22 @@ func generateLoaderCode(schema *Schema) {
 		tables = append(tables, table)
 	}
 
-	outBytes, err := executeTemplate("datastore.tmpl", tables)
+	outBytes, err := executeTemplate("datastore.tmpl", tables, template.FuncMap{})
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	formattedBytes, err := format.Source(outBytes.Bytes())
 	if err != nil {
-		writeBytes(outBytes.Bytes(), "datastore.bad")
+		writeBytes(outBytes.Bytes(), "output/datastore.bad")
 		log.Fatal("Formatter failed:", err)
 	}
 
-	writeBytes(formattedBytes, "datastore.go")
+	writeBytes(formattedBytes, "output/datastore.go")
 }
 
-func executeTemplate(name string, data interface{}) (*bytes.Buffer, error) {
-	templates, err := template.ParseFiles(name)
+func executeTemplate(name string, data interface{}, funcs template.FuncMap) (*bytes.Buffer, error) {
+	templates, err := template.New("generator-templates").Funcs(funcs).ParseFiles(name)
 	if err != nil {
 		return nil, err
 	}
@@ -167,7 +206,7 @@ func main() {
 }
 
 func writeBytes(bytes []byte, filename string) {
-	outFile, err := os.Create("datastore.go")
+	outFile, err := os.Create(filename)
 	if err != nil {
 		log.Fatal(err)
 	}

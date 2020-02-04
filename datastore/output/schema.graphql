@@ -1,10 +1,3 @@
-type Query {
-  catalog_series(id: ID!): CatalogSeries
-  portfolio_group(id: ID!): PortfolioGroup
-  service_item(id: ID!): ServiceItem
-  restoration_item(id: ID!): RestorationItem
-  about_topic(id: ID!): AboutTopic
-}
 
 type PortfolioGroup {
   image_group: String
@@ -106,3 +99,4 @@ type MarketCarforsale {
   id: ID
   shortname: String
 }
+

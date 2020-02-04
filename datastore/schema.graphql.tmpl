@@ -1,0 +1,7 @@
+{{ range . }}
+type {{.ObjType}} {
+{{- range .Fields }}
+  {{ . }}: {{GetFieldType .}}
+{{- end}}
+}
+{{ end }}

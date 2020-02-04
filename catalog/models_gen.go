@@ -2,45 +2,103 @@
 
 package catalog
 
+type AboutTopic struct {
+	Description *string `json:"description"`
+	ImageGroup  *string `json:"image_group"`
+	Name        *string `json:"name"`
+	ID          *string `json:"id"`
+	Shortname   *string `json:"shortname"`
+}
+
 type CatalogSeries struct {
-	ID                        *string                  `json:"id"`
-	Name                      *string                  `json:"name"`
 	Description               *string                  `json:"description"`
-	Shortname                 *string                  `json:"shortname"`
 	ImageGroup                *string                  `json:"image_group"`
+	Name                      *string                  `json:"name"`
+	ID                        *string                  `json:"id"`
+	Shortname                 *string                  `json:"shortname"`
 	CatalogSeriesCategoryList []*CatalogSeriesCategory `json:"catalog_series_category_list"`
 }
 
 type CatalogSeriesCategory struct {
-	ID                            *string                      `json:"id"`
 	CatalogSeriesID               *string                      `json:"catalog_series_id"`
-	Name                          *string                      `json:"name"`
 	Description                   *string                      `json:"description"`
-	Shortname                     *string                      `json:"shortname"`
 	ImageGroup                    *string                      `json:"image_group"`
+	Name                          *string                      `json:"name"`
+	ID                            *string                      `json:"id"`
+	Shortname                     *string                      `json:"shortname"`
 	CatalogSeriesCategoryPartList []*CatalogSeriesCategoryPart `json:"catalog_series_category_part_list"`
 }
 
 type CatalogSeriesCategoryPart struct {
-	ID                                   *string                             `json:"id"`
 	CatalogSeriesCategoryID              *string                             `json:"catalog_series_category_id"`
-	Name                                 *string                             `json:"name"`
-	Description                          *string                             `json:"description"`
-	Shortname                            *string                             `json:"shortname"`
-	ImageGroup                           *string                             `json:"image_group"`
 	Code                                 *string                             `json:"code"`
+	Description                          *string                             `json:"description"`
+	ImageGroup                           *string                             `json:"image_group"`
 	Internalcode                         *string                             `json:"internalcode"`
+	Price                                *float64                            `json:"price"`
+	ID                                   *string                             `json:"id"`
 	Tag                                  *string                             `json:"tag"`
-	Price                                *int                                `json:"price"`
 	CatalogSeriesCategoryPartVersionList []*CatalogSeriesCategoryPartVersion `json:"catalog_series_category_part_version_list"`
 }
 
 type CatalogSeriesCategoryPartVersion struct {
-	ID                          *string `json:"id"`
-	CatalogSeriesCategoryPartID *string `json:"catalog_series_category_part_id"`
-	Code                        *string `json:"code"`
-	Internalcode                *string `json:"internalcode"`
-	Description                 *string `json:"description"`
-	ImageGroup                  *string `json:"image_group"`
-	Price                       *int    `json:"price"`
+	CatalogSeriesCategoryPartID *string  `json:"catalog_series_category_part_id"`
+	Code                        *string  `json:"code"`
+	Description                 *string  `json:"description"`
+	ImageGroup                  *string  `json:"image_group"`
+	Internalcode                *string  `json:"internalcode"`
+	Price                       *float64 `json:"price"`
+	ID                          *string  `json:"id"`
+}
+
+type Image struct {
+	Anchor   *string `json:"anchor"`
+	Group    *string `json:"group"`
+	Href     *string `json:"href"`
+	LargeSrc *string `json:"large_src"`
+	ID       *string `json:"id"`
+	Sequence *string `json:"sequence"`
+	SmallSrc *string `json:"small_src"`
+	Tag      *string `json:"tag"`
+}
+
+type MarketCarforsale struct {
+	Description *string `json:"description"`
+	ImageGroup  *string `json:"image_group"`
+	Name        *string `json:"name"`
+	ID          *string `json:"id"`
+	Shortname   *string `json:"shortname"`
+}
+
+type PortfolioGroup struct {
+	ImageGroup             *string               `json:"image_group"`
+	Name                   *string               `json:"name"`
+	ID                     *string               `json:"id"`
+	Shortname              *string               `json:"shortname"`
+	PortfolioGroupItemList []*PortfolioGroupItem `json:"portfolio_group_item_list"`
+}
+
+type PortfolioGroupItem struct {
+	Description      *string `json:"description"`
+	ImageGroup       *string `json:"image_group"`
+	Name             *string `json:"name"`
+	PortfolioGroupID *string `json:"portfolio_group_id"`
+	ID               *string `json:"id"`
+	Shortname        *string `json:"shortname"`
+}
+
+type RestorationItem struct {
+	Description *string `json:"description"`
+	ImageGroup  *string `json:"image_group"`
+	Name        *string `json:"name"`
+	ID          *string `json:"id"`
+	Shortname   *string `json:"shortname"`
+}
+
+type ServiceItem struct {
+	Description *string `json:"description"`
+	ImageGroup  *string `json:"image_group"`
+	Name        *string `json:"name"`
+	ID          *string `json:"id"`
+	Shortname   *string `json:"shortname"`
 }
