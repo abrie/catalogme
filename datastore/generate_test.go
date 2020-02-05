@@ -27,8 +27,13 @@ func Test_toObjName(t *testing.T) {
 }
 
 func Test_toSelectParams(t *testing.T) {
-	columns := []string{"id", "name", "catalog_series_id", "description", "image_group"}
-	expect := "ROWID,name,catalog_series_id,description,image_group"
+	columns := []Column{
+		Column{Name: "id", Type: "text"},
+		Column{Name: "name", Type: "text"},
+		Column{Name: "catalog_series_id", Type: "text"},
+		Column{Name: "image_group", Type: "text"},
+	}
+	expect := "ROWID,name,catalog_series_id,image_group"
 	got := toSelectParams(columns)
 	if got != expect {
 		t.Errorf("Expected '%s', Got '%s'", expect, got)
@@ -36,8 +41,13 @@ func Test_toSelectParams(t *testing.T) {
 }
 
 func Test_toScanParams(t *testing.T) {
-	columns := []string{"id", "name", "catalog_series_id", "description", "image_group"}
-	expect := "&obj.ID,&obj.Name,&obj.CatalogSeriesID,&obj.Description,&obj.ImageGroup"
+	columns := []Column{
+		Column{Name: "id", Type: "text"},
+		Column{Name: "name", Type: "text"},
+		Column{Name: "catalog_series_id", Type: "text"},
+		Column{Name: "image_group", Type: "text"},
+	}
+	expect := "&obj.ID,&obj.Name,&obj.CatalogSeriesID,&obj.ImageGroup"
 	got := toScanParams(columns)
 	if got != expect {
 		t.Errorf("Expected '%s', Got '%s'", expect, got)

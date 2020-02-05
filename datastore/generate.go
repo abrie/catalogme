@@ -124,8 +124,6 @@ func generateGQLSchema(schema *Schema) {
 					return "String"
 				case "integer":
 					return "Int"
-				case "real":
-					return "Float"
 				default:
 					return column.Type
 				}
