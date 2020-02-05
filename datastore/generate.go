@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path"
 	"strings"
 	"text/template"
 )
@@ -77,7 +78,7 @@ func isForeignKey(name string) bool {
 	return strings.HasSuffix(name, "_id")
 }
 
-func generateGQLSchema(schema *Schema) {
+func generateGQLSchema(schema *Schema, templateName string, outputPath string) {
 	type Table struct {
 		ObjType string
 		Fields  []Column
@@ -130,15 +131,15 @@ func generateGQLSchema(schema *Schema) {
 			}
 		},
 	}
-	outBytes, err := executeTemplate("schema.graphql.tmpl", list, funcs)
+	outBytes, err := executeTemplate(templateName, list, funcs)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	writeBytes(outBytes.Bytes(), "output/schema.graphql")
+	writeBytes(outBytes.Bytes(), outputPath)
 }
 
-func generateLoaderCode(schema *Schema) {
+func generateLoaderCode(schema *Schema, templateName string, outPath string) {
 	type Table struct {
 		ObjType      string
 		TableName    string
@@ -165,18 +166,18 @@ func generateLoaderCode(schema *Schema) {
 		tables = append(tables, table)
 	}
 
-	outBytes, err := executeTemplate("datastore.tmpl", tables, template.FuncMap{})
+	outBytes, err := executeTemplate(templateName, tables, template.FuncMap{})
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	formattedBytes, err := format.Source(outBytes.Bytes())
 	if err != nil {
-		writeBytes(outBytes.Bytes(), "output/datastore.bad")
+		writeBytes(outBytes.Bytes(), path.Join(outPath, ".failed"))
 		log.Fatal("Formatter failed:", err)
 	}
 
-	writeBytes(formattedBytes, "output/datastore.go")
+	writeBytes(formattedBytes, outPath)
 }
 
 func executeTemplate(name string, data interface{}, funcs template.FuncMap) (*bytes.Buffer, error) {
@@ -185,7 +186,7 @@ func executeTemplate(name string, data interface{}, funcs template.FuncMap) (*by
 		return nil, err
 	}
 
-	tmpl := templates.Lookup(name)
+	tmpl := templates.Lookup(path.Base(name))
 	if tmpl == nil {
 		return nil, fmt.Errorf("No template named %s", name)
 	}
@@ -211,11 +212,16 @@ func main() {
 		log.Fatal(err)
 	}
 
-	generateLoaderCode(schema)
-	generateGQLSchema(schema)
+	generateLoaderCode(schema, "datastore.tmpl", "output/datastore.go")
+	generateGQLSchema(schema, "schema.graphql.tmpl", "output/schema.graphql")
 }
 
 func writeBytes(bytes []byte, filename string) {
+	err := os.MkdirAll(path.Dir(filename), os.ModePerm)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	outFile, err := os.Create(filename)
 	if err != nil {
 		log.Fatal(err)
@@ -223,24 +229,6 @@ func writeBytes(bytes []byte, filename string) {
 	defer outFile.Close()
 
 	outFile.Write(bytes)
-}
-
-func loadSchemaTemplate() (*template.Template, error) {
-	templates, err := template.ParseFiles("schema.graphql.tmpl")
-	if err != nil {
-		return nil, err
-	}
-
-	return templates, nil
-}
-
-func loadCodeTemplate() (*template.Template, error) {
-	templates, err := template.ParseFiles("datastore.tmpl")
-	if err != nil {
-		return nil, err
-	}
-
-	return templates, nil
 }
 
 func loadSchema(schemaPath string) (*Schema, error) {
