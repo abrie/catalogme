@@ -12,32 +12,79 @@ import (
 )
 
 type Column map[string]string
-type Table []Column
+type Columns []Column
 
-type Data struct {
-	Name  string
-	Table Table
+type Table struct {
+	Name    string
+	Columns Columns
 }
 
 type TemplateData struct {
-	Input  string
-	Tables []Data
+	InputDatabase string
+	Tables        []Table
 }
 
-type Database map[string]Table
+type Database map[string]Columns
 
-func CreateFields(table []Column) (string, error) {
+func shouldDropColumn(table Table, column Column) bool {
+	if table.Name == "catalog_series_category_part" {
+		if column["name"] == "tag" {
+			return true
+		}
+	}
+
+	return false
+}
+
+func FieldsForCreate(table Table) (string, error) {
 	var list []string
-	for _, column := range table {
-		list = append(list, fmt.Sprintf(`"%s" %s`, column["name"], column["type"]))
+	for _, column := range table.Columns {
+		if shouldDropColumn(table, column) {
+			continue
+		}
+
+		/* Modification: If price column, set data type to integer */
+		var datatype string
+		if column["name"] == "price" {
+			datatype = "integer"
+		} else {
+			datatype = column["type"]
+		}
+		/***/
+
+		list = append(list, fmt.Sprintf(`"%s" %s`, column["name"], datatype))
 	}
 	return strings.Join(list, ", "), nil
 }
 
-func InsertFields(table []Column) (string, error) {
+func FieldsForInsert(table Table) (string, error) {
 	var list []string
-	for _, column := range table {
+	for _, column := range table.Columns {
+		if shouldDropColumn(table, column) {
+			continue
+		}
 		list = append(list, fmt.Sprintf(`"%s"`, column["name"]))
+	}
+	return strings.Join(list, ", "), nil
+}
+
+func FieldsForSelect(table Table) (string, error) {
+	var list []string
+	for _, column := range table.Columns {
+		if shouldDropColumn(table, column) {
+			continue
+		}
+
+		/* Modification: If price column, multiply by 100 to get cent denominated price */
+		var name string
+		if column["name"] == "price" {
+			name = fmt.Sprintf(`"%s"*100`, column["name"])
+		} else {
+			name = fmt.Sprintf(`"%s"`, column["name"])
+		}
+		/***/
+
+		list = append(list, name)
 	}
 	return strings.Join(list, ", "), nil
 }
@@ -65,21 +112,31 @@ func main() {
 	}
 	json.Unmarshal(bytes, &database)
 
-	funcs := template.FuncMap{"CreateFields": CreateFields, "InsertFields": InsertFields}
+	funcs := template.FuncMap{"FieldsForCreate": FieldsForCreate, "FieldsForSelect": FieldsForSelect, "FieldsForInsert": FieldsForInsert}
 	tmpl, err := template.New("gen").Funcs(funcs).ParseFiles(templateFile)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	tables := []Data{}
-	for name, table := range database {
-		data := Data{Name: name, Table: table}
-		tables = append(tables, data)
+	tables := []Table{}
+	for name, columns := range database {
+
+		/* Modification: Filter out unused tables */
+		if name == "home" {
+			continue
+		}
+		if name == "home_item" {
+			continue
+		}
+		/* */
+
+		table := Table{Name: name, Columns: columns}
+		tables = append(tables, table)
 	}
 
 	templateData := TemplateData{
-		Input:  databaseFile,
-		Tables: tables}
+		InputDatabase: databaseFile,
+		Tables:        tables}
 
 	err = tmpl.ExecuteTemplate(os.Stdout, path.Base(templateFile), &templateData)
 	if err != nil {
