@@ -2,9 +2,9 @@
 set -ue
 
 # This mess extracts the schema from the DB,
-# it outputs a JSON dictionary of table names keyed to an array of their columns.
+# it outputs a JSON dictionary of table names keyed to a descriptive object.
 #
-# {"table_name":[ ['column1', 'type'], ['column2', 'type'], ['column3', 'type'] ... ] }
+# {"table_name":[ {"name":"column1", "type":"string"} ... }
 
 RESULT=tables.json
 TEMPB=$RANDOM.tmp
@@ -16,7 +16,7 @@ do
   echo "[]" > $ACC
   for column in $(sqlite3 $1 -csv "pragma table_info('$table')" \
     | sed 's/,/ /g' \
-    | awk '{printf "[\"%s\",\"%s\"]\n", $2,$3}')
+    | awk '{printf "{\"name\":\"%s\",\"type\":\"%s\"}\n", $2,$3}')
     do
       echo $column > $TEMPB
       jq '. += [input]' $ACC $TEMPB > $TEMP

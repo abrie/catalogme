@@ -11,7 +11,7 @@ import (
 	"text/template"
 )
 
-type Column []string
+type Column map[string]string
 type Table []Column
 
 type Data struct {
@@ -29,7 +29,7 @@ type Database map[string]Table
 func CreateFields(table []Column) (string, error) {
 	var list []string
 	for _, column := range table {
-		list = append(list, fmt.Sprintf(`"%s" %s`, column[0], column[1]))
+		list = append(list, fmt.Sprintf(`"%s" %s`, column["name"], column["type"]))
 	}
 	return strings.Join(list, ", "), nil
 }
@@ -37,7 +37,7 @@ func CreateFields(table []Column) (string, error) {
 func InsertFields(table []Column) (string, error) {
 	var list []string
 	for _, column := range table {
-		list = append(list, fmt.Sprintf(`"%s"`, column[0]))
+		list = append(list, fmt.Sprintf(`"%s"`, column["name"]))
 	}
 	return strings.Join(list, ", "), nil
 }

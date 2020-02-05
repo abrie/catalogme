@@ -6,103 +6,120 @@ type Query {
   about_topic(id: ID!): AboutTopic
 }
 
-type PortfolioGroup {
-  image_group: String
-  name: String
-  id: ID
-  shortname: String
-  portfolio_group_item_list: [PortfolioGroupItem!]!
-}
-
-type ServiceItem {
-  description: String
-  image_group: String
-  name: String
-  id: ID
-  shortname: String
-}
-
 type CatalogSeries {
+  id: ID
+  name: String
+  shortname: String
   description: String
   image_group: String
-  name: String
-  id: ID
-  shortname: String
   catalog_series_category_list: [CatalogSeriesCategory!]!
 }
 
-type PortfolioGroupItem {
-  description: String
-  image_group: String
-  name: String
-  portfolio_group_id: String
-  id: ID
-  shortname: String
-}
-
-type RestorationItem {
-  description: String
-  image_group: String
-  name: String
-  id: ID
-  shortname: String
-}
-
-type CatalogSeriesCategory {
-  catalog_series_id: String
-  description: String
-  image_group: String
-  name: String
-  id: ID
-  shortname: String
-  catalog_series_category_part_list: [CatalogSeriesCategoryPart!]!
-}
-
 type CatalogSeriesCategoryPart {
-  catalog_series_category_id: String
+  id: ID
+  catalog_series_category_id: ID
   code: String
-  description: String
-  image_group: String
   internalcode: String
   price: Float
-  id: ID
+  description: String
   tag: String
+  image_group: String
   catalog_series_category_part_version_list: [CatalogSeriesCategoryPartVersion!]!
 }
 
-type Image {
-  anchor: String
-  group: String
-  href: String
-  large_src: String
+type CatalogSeriesCategoryPartVersion {
   id: ID
-  sequence: String
-  small_src: String
-  tag: String
+  catalog_series_category_part_id: ID
+  code: String
+  internalcode: String
+  price: Float
+  description: String
+  image_group: String
 }
 
 type AboutTopic {
+  id: ID
+  name: String
+  shortname: String
   description: String
   image_group: String
-  name: String
-  id: ID
-  shortname: String
 }
 
-type CatalogSeriesCategoryPartVersion {
-  catalog_series_category_part_id: String
-  code: String
+type CatalogSeriesCategory {
+  id: ID
+  catalog_series_id: ID
+  name: String
+  shortname: String
   description: String
   image_group: String
-  internalcode: String
-  price: Float
+  catalog_series_category_part_list: [CatalogSeriesCategoryPart!]!
+}
+
+type Image {
   id: ID
+  large_src: String
+  tag: String
+  group: String
+  href: String
+  anchor: String
+  sequence: Int
+  small_src: String
+}
+
+type ServiceItem {
+  id: ID
+  name: String
+  shortname: String
+  description: String
+  image_group: String
+}
+
+type PortfolioGroup {
+  id: ID
+  name: String
+  shortname: String
+  image_group: String
+  portfolio_group_item_list: [PortfolioGroupItem!]!
+}
+
+type Home {
+  id: ID
+  name: String
+  shortname: String
+  description: String
+  image_group: String
 }
 
 type MarketCarforsale {
+  id: ID
+  name: String
+  shortname: String
   description: String
   image_group: String
-  name: String
+}
+
+type PortfolioGroupItem {
   id: ID
+  portfolio_group_id: ID
+  name: String
   shortname: String
+  description: String
+  image_group: String
+}
+
+type RestorationItem {
+  id: ID
+  name: String
+  shortname: String
+  description: String
+  image_group: String
+}
+
+type HomeItem {
+  id: ID
+  subset: Int
+  name: String
+  shortname: String
+  description: String
+  image_group: String
 }

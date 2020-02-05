@@ -13,7 +13,12 @@ import (
 	"text/template"
 )
 
-type Columns []string
+type Column struct {
+	Name string `json:"name"`
+	Type string `json:"type"`
+}
+
+type Columns []Column
 type Schema map[string]Columns
 
 func toObjName(tableName string) string {
@@ -50,19 +55,19 @@ func toScanField(name string) string {
 	return strings.Join(parts, "")
 }
 
-func toSelectParams(columns []string) string {
+func toSelectParams(columns []Column) string {
 	var params []string
 	for _, column := range columns {
-		params = append(params, toSelectField(column))
+		params = append(params, toSelectField(column.Name))
 	}
 
 	return strings.Join(params, ",")
 }
 
-func toScanParams(columns []string) string {
+func toScanParams(columns []Column) string {
 	var params []string
 	for _, column := range columns {
-		params = append(params, fmt.Sprintf("&obj.%s", toScanField(column)))
+		params = append(params, fmt.Sprintf("&obj.%s", toScanField(column.Name)))
 	}
 
 	return strings.Join(params, ",")
@@ -75,7 +80,7 @@ func isForeignKey(name string) bool {
 func generateGQLSchema(schema *Schema) {
 	type Table struct {
 		ObjType string
-		Fields  []string
+		Fields  []Column
 	}
 
 	tables := map[string]Table{}
@@ -89,11 +94,12 @@ func generateGQLSchema(schema *Schema) {
 	}
 
 	for tableName, table := range tables {
-		for _, field := range table.Fields {
-			if strings.HasSuffix(field, "_id") {
-				parentName := strings.TrimSuffix(field, "_id")
+		for _, column := range table.Fields {
+			if strings.HasSuffix(column.Name, "_id") {
+				parentName := strings.TrimSuffix(column.Name, "_id")
 				parent := tables[parentName]
-				parent.Fields = append(parent.Fields, tableName+"_list")
+				newField := Column{Name: tableName + "_list", Type: fmt.Sprintf("[%s!]!", toObjName(tableName))}
+				parent.Fields = append(parent.Fields, newField)
 				tables[parentName] = parent
 			}
 		}
@@ -105,17 +111,23 @@ func generateGQLSchema(schema *Schema) {
 	}
 
 	funcs := template.FuncMap{
-		"GetFieldType": func(name string) string {
-			if strings.HasSuffix(name, "_list") {
-				return fmt.Sprintf("[%s!]!", toObjName(strings.TrimSuffix(name, "_list")))
+		"GetFieldType": func(column Column) string {
+			if strings.HasSuffix(column.Name, "_id") {
+				return "ID"
 			} else {
-				switch name {
+				switch column.Name {
 				case "id":
 					return "ID"
-				case "price":
+				}
+				switch column.Type {
+				case "text":
+					return "String"
+				case "integer":
+					return "Int"
+				case "real":
 					return "Float"
 				default:
-					return "String"
+					return column.Type
 				}
 			}
 		},
@@ -147,8 +159,8 @@ func generateLoaderCode(schema *Schema) {
 			ScanParams:   toScanParams(columns)}
 
 		for _, column := range columns {
-			if isForeignKey(column) {
-				table.ForeignKey = column
+			if isForeignKey(column.Name) {
+				table.ForeignKey = column.Name
 			}
 		}
 
@@ -196,7 +208,7 @@ func executeTemplate(name string, data interface{}, funcs template.FuncMap) (*by
 }
 
 func main() {
-	schema, err := loadSchema("../migrate/merged/merged.json")
+	schema, err := loadSchema("../migrate/out/shape/tables.json")
 	if err != nil {
 		log.Fatal(err)
 	}
