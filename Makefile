@@ -22,8 +22,12 @@ reshape:
 	rm -f $(PWD)/migrate/out/reshape/db.sqlite3
 	sqlite3 $(PWD)/migrate/out/reshape/db.sqlite3 < $(PWD)/migrate/out/reshape/reshape.sql
 
-.PHONY: shape
-shape:
-	mkdir -p $(PWD)/migrate/out/shape
-	./migrate/tools/reshape/extract-schema.sh $(PWD)/migrate/out/reshape/db.sqlite3 > $(PWD)/migrate/out/shape/tables.json
+.PHONY: datastore
+datastore:
+	mkdir -p $(PWD)/migrate/out/datastore
+	./migrate/tools/reshape/extract-schema.sh $(PWD)/migrate/out/reshape/db.sqlite3 > $(PWD)/migrate/out/datastore/tables.json
+	go run ./migrate/tools/datastore/generate.go \
+		-input $(PWD)/migrate/out/datastore/tables.json \
+		-templates $(PWD)/migrate/tools/datastore \
+		-output $(PWD)/migrate/out/datastore
 

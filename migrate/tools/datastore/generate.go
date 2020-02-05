@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"go/format"
 	"io/ioutil"
@@ -207,13 +208,23 @@ func executeTemplate(name string, data interface{}, funcs template.FuncMap) (*by
 }
 
 func main() {
-	schema, err := loadSchema("../migrate/out/shape/tables.json")
+	var inputFile = flag.String("input", "", "JSON describing the DB tables.")
+	var outputPath = flag.String("output", "", "Path to place generated files.")
+	var templatesPath = flag.String("templates", "", "Path to templates.")
+	flag.Parse()
+
+	if *inputFile == "" || *outputPath == "" || *templatesPath == "" {
+		flag.PrintDefaults()
+		return
+	}
+
+	schema, err := loadSchema(*inputFile)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	generateLoaderCode(schema, "datastore.tmpl", "output/datastore.go")
-	generateGQLSchema(schema, "schema.graphql.tmpl", "output/schema.graphql")
+	generateLoaderCode(schema, path.Join(*templatesPath, "datastore.tmpl"), path.Join(*outputPath, "datastore.go"))
+	generateGQLSchema(schema, path.Join(*templatesPath, "schema.graphql.tmpl"), path.Join(*outputPath, "schema.graphql"))
 }
 
 func writeBytes(bytes []byte, filename string) {
