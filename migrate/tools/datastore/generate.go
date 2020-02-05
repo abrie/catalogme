@@ -37,11 +37,7 @@ func toObjName(tableName string) string {
 }
 
 func toSelectField(name string) string {
-	if name == "id" {
-		return "ROWID"
-	} else {
-		return name
-	}
+	return name
 }
 
 func toScanField(name string) string {

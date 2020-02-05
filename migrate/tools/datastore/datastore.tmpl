@@ -42,7 +42,7 @@ func (datastore *Datastore) Get{{.ObjType}}(id string) (*{{.ObjType}}, error) {
 		obj {{.ObjType}}
 	)
 
-	err := datastore.DB.QueryRow("select {{.SelectParams}} from {{.TableName}} where ROWID=?", id).Scan({{.ScanParams}})
+	err := datastore.DB.QueryRow("select {{.SelectParams}} from {{.TableName}} where id=?", id).Scan({{.ScanParams}})
 	if err != nil {
 		log.Fatal(err)
 	}
