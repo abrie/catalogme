@@ -1,7 +1,9 @@
 package main
 
 import (
-	catalog "catalog"
+	"catalog/datastore"
+	"catalog/graph"
+	"catalog/resolver"
 	"flag"
 	"log"
 	"net/http"
@@ -20,10 +22,10 @@ func main() {
 		return
 	}
 
-	datastore := catalog.OpenDatastore(*dbPath)
-	datastore.Ping()
+	store := datastore.OpenDatastore(*dbPath)
+	store.Ping()
 
-	defer datastore.Close()
+	defer store.Close()
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -31,7 +33,7 @@ func main() {
 	}
 
 	http.Handle("/", handler.Playground("GraphQL playground", "/query"))
-	http.Handle("/query", handler.GraphQL(catalog.NewExecutableSchema(catalog.Config{Resolvers: &catalog.Resolver{datastore}})))
+	http.Handle("/query", handler.GraphQL(graph.NewExecutableSchema(graph.Config{Resolvers: &resolver.Resolver{store}})))
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))

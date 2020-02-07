@@ -6,9 +6,15 @@
 schema:
   - schema.graphql
 exec:
-  filename: generated.go
+  filename: graph/generated.go
+  package: graph
 model:
-  filename: models_gen.go
+  filename: datastore/models_gen.go
+  package: datastore
+resolver:
+  filename: resolver/resolver.go
+  package: resolver
+  type: Resolver
 models:
   CatalogSeries:
     fields:
@@ -26,7 +32,4 @@ models:
     fields:
       portfolio_group_item_list:
         resolver: true
-resolver:
-  filename: resolver.go
-  type: Resolver
 autobind: []
