@@ -2,6 +2,7 @@ package main
 
 import (
 	catalog "catalog"
+	"flag"
 	"log"
 	"net/http"
 	"os"
@@ -12,7 +13,14 @@ import (
 const defaultPort = "8080"
 
 func main() {
-	datastore := catalog.OpenDatastore("../migrate/original/db.sqlite3")
+	dbPath := flag.String("datastore", "", "Path to the datastore db.")
+	flag.Parse()
+	if *dbPath == "" {
+		flag.PrintDefaults()
+		return
+	}
+
+	datastore := catalog.OpenDatastore(*dbPath)
 	datastore.Ping()
 
 	defer datastore.Close()

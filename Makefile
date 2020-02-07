@@ -1,33 +1,47 @@
 PWD=$(shell pwd)
 SOURCE=$(shell jq -r .source secrets/secrets.json)
 
+ORIGINAL=$(PWD)/migrate/original
+RESHAPE=$(PWD)/migrate/reshape
+GENERATE=$(PWD)/migrate/generate
+SERVER=$(PWD)/migrate/server
+
 .PHONY: clean
 clean:
-	@-rm -rf $(PWD)/migrate/out
+	@-rm -rf $(RESHAPE)
+	@-rm -rf $(DATASTORE)
+	@-rm -rf $(SERVER)
 
 .PHONY: sync
 sync:
-	INPUT=$(SOURCE) OUTPUT=$(PWD)/migrate/original ./migrate/tools/sync/run.sh
+	INPUT=$(SOURCE) OUTPUT=$(ORIGINAL) ./src/sync/run.sh
 
 .PHONY: reshape
 reshape:
-	mkdir -p $(PWD)/migrate/out/reshape
-	./migrate/tools/reshape/extract-schema.sh $(PWD)/migrate/original/db.sqlite3 > $(PWD)/migrate/out/reshape/tables.json
+	mkdir -p $(RESHAPE)
+	./src/reshape/extract-schema.sh $(ORIGINAL)/db.sqlite3 > $(RESHAPE)/original.json
 	go run \
-		./migrate/tools/reshape/gen.go \
-		$(PWD)/migrate/original/db.sqlite3 \
-		$(PWD)/migrate/out/reshape/tables.json \
-		$(PWD)/migrate/tools/reshape/reshape.sql.gotmpl \
-		> $(PWD)/migrate/out/reshape/reshape.sql
-	rm -f $(PWD)/migrate/out/reshape/db.sqlite3
-	sqlite3 $(PWD)/migrate/out/reshape/db.sqlite3 < $(PWD)/migrate/out/reshape/reshape.sql
+		./src/reshape/gen.go \
+		$(ORIGINAL)/db.sqlite3 \
+		$(RESHAPE)/original.json \
+		$(PWD)/src/reshape/reshape.sql.gotmpl \
+		> $(RESHAPE)/reshape.sql
+	rm -f $(RESHAPE)/db.sqlite3
+	sqlite3 $(RESHAPE)/db.sqlite3 < $(RESHAPE)/reshape.sql
+	./src/reshape/extract-schema.sh $(RESHAPE)/db.sqlite3 > $(RESHAPE)/shape.json
 
-.PHONY: datastore
-datastore:
-	mkdir -p $(PWD)/migrate/out/datastore
-	./migrate/tools/reshape/extract-schema.sh $(PWD)/migrate/out/reshape/db.sqlite3 > $(PWD)/migrate/out/datastore/tables.json
-	go run ./migrate/tools/datastore/generate.go \
-		-input $(PWD)/migrate/out/datastore/tables.json \
-		-templates $(PWD)/migrate/tools/datastore \
-		-output $(PWD)/migrate/out/datastore
+.PHONY: generate
+generate:
+	mkdir -p $(GENERATE)
+	go run ./src/generate/generate.go \
+		-input $(RESHAPE)/shape.json \
+		-templates $(PWD)/src/generate \
+		-output $(GENERATE)
 
+.PHONY: server
+server:
+	mkdir -p $(SERVER)
+	cp $(GENERATE)/datastore.go $(SERVER)
+	cp $(GENERATE)/schema.graphql $(SERVER)
+	cp -R ./src/server/* $(SERVER)
+	(cd $(SERVER) && go run github.com/99designs/gqlgen -v)
