@@ -52,11 +52,11 @@ func (datastore *Datastore) Get{{.ObjType}}(id string) (*{{.ObjType}}, error) {
 {{ end }}
 
 {{ define "QueryList" }}
-func (datastore *Datastore) List_{{.ObjType}}(id string) ([]*{{.ObjType}}, error) {
+func (datastore *Datastore) List_{{.ObjType}}(id *string) ([]*{{.ObjType}}, error) {
 	var (
 		list []*{{.ObjType}}
 	)
-	rows, err := datastore.DB.Query("select {{.SelectParams}} from {{.TableName}} where {{.ForeignKey}}=?", id)
+	rows, err := datastore.DB.Query("select {{.SelectParams}} from {{.TableName}} where {{.ForeignKey}}=?", *id)
 	if err != nil {
 		log.Fatal(err)
 	}
