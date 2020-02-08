@@ -40,8 +40,8 @@ generate:
 
 .PHONY: server
 server:
-	mkdir -p $(SERVER)
-	cp $(GENERATE)/datastore.go $(SERVER)
+	mkdir -p $(SERVER)/datastore
+	cp $(GENERATE)/datastore.go $(SERVER)/datastore
 	cp $(GENERATE)/schema.graphql $(SERVER)
 	cp -R ./src/server/* $(SERVER)
 	(cd $(SERVER) && go run github.com/99designs/gqlgen -v)
