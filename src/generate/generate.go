@@ -75,22 +75,42 @@ func isForeignKey(name string) bool {
 	return strings.HasSuffix(name, "_id")
 }
 
+func filterInputColumns(input []Column) []Column {
+	var output []Column
+	for _, column := range input {
+		if column.Name == "id" || column.Name == "shortname" {
+			continue
+		} else {
+			output = append(output, column)
+		}
+	}
+
+	return output
+}
+
 func generateGQLSchema(schema *Schema, templateName string, outputPath string) {
 	type Table struct {
-		ObjType string
-		Fields  []Column
+		ObjType   string
+		TableName string
+		Fields    []Column
+		Inputs    []Column
 	}
 
 	tables := map[string]Table{}
 	for tableName, columns := range *schema {
 		table := Table{
-			ObjType: toObjName(tableName),
-			Fields:  columns,
+			TableName: tableName,
+			ObjType:   toObjName(tableName),
+			Fields:    columns,
+			Inputs:    filterInputColumns(columns),
 		}
 
 		tables[tableName] = table
 	}
 
+	/* Re-scan the columns in each table, and add *_list fields
+	if the column references another table.
+	*/
 	for tableName, table := range tables {
 		for _, column := range table.Fields {
 			if strings.HasSuffix(column.Name, "_id") {

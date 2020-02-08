@@ -1,16 +1,28 @@
 type Query {
-  catalog_series(id: ID!): CatalogSeries
-  portfolio_group(id: ID!): PortfolioGroup
-  service_item(id: ID!): ServiceItem
-  restoration_item(id: ID!): RestorationItem
-  about_topic(id: ID!): AboutTopic
-  market_carforsale(id: ID!): MarketCarforsale
+{{ range . }}
+  {{.TableName}}(id: ID!): {{.ObjType}}
+{{ end }}
 }
+
+type Mutation {
+{{ range . }}
+  create{{.ObjType}}(input: {{.ObjType}}Input): {{.ObjType}}
+  update{{.ObjType}}(id: ID!, input:{{.ObjType}}Input): {{.ObjType}}
+{{ end }}
+}
+
+{{ range . }}
+input {{.ObjType}}Input {
+{{- range .Inputs }}
+  {{ .Name }}: {{ GetFieldType . }}
+{{- end }}
+}
+{{ end }}
 
 {{ range . }}
 type {{.ObjType}} {
 {{- range .Fields }}
   {{ .Name }}: {{ GetFieldType . }}
-{{- end}}
+{{- end }}
 }
 {{ end }}
