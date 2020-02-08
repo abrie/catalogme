@@ -1,6 +1,6 @@
 ATTACH DATABASE "{{.InputDatabase}}" as input;
 {{ range .Tables }}
-CREATE TABLE {{.Name}} ( "id" text, {{FieldsForCreate .}} );
+CREATE TABLE {{.Name}} ( "id" text primary key, {{FieldsForCreate .}} );
 INSERT INTO {{.Name}} ( "id", {{FieldsForInsert .}} )
-SELECT "ROWID", {{FieldsForSelect .}} FROM input.{{.Name}};
+SELECT cast("ROWID" as text), {{FieldsForSelect .}} FROM input.{{.Name}};
 {{ end }}
