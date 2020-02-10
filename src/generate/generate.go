@@ -40,7 +40,7 @@ func toSelectField(name string) string {
 	return name
 }
 
-func toScanField(name string) string {
+func toScanParam(name string) string {
 	parts := strings.Split(name, "_")
 	for idx, part := range parts {
 		if part == "id" {
@@ -51,6 +51,45 @@ func toScanField(name string) string {
 	}
 
 	return strings.Join(parts, "")
+}
+
+func toUpdateParam(name string) string {
+	parts := strings.Split(name, "_")
+	for idx, part := range parts {
+		if part == "id" {
+			parts[idx] = "ID"
+		} else {
+			parts[idx] = strings.Title(part)
+		}
+	}
+
+	return strings.Join(parts, "")
+}
+
+func toUpdateParams(columns []Column) string {
+	var params []string
+	for _, column := range columns {
+		if column.Name != "id" {
+			params = append(params, fmt.Sprintf("input.%s", toScanParam(column.Name)))
+		}
+	}
+
+	return strings.Join(params, ",")
+}
+
+func toUpdateField(name string) string {
+	return fmt.Sprintf(`%s=?`, name)
+}
+
+func toUpdateFields(columns []Column) string {
+	var params []string
+	for _, column := range columns {
+		if column.Name != "id" {
+			params = append(params, toUpdateField(column.Name))
+		}
+	}
+
+	return strings.Join(params, ",")
 }
 
 func toSelectParams(columns []Column) string {
@@ -65,7 +104,7 @@ func toSelectParams(columns []Column) string {
 func toScanParams(columns []Column) string {
 	var params []string
 	for _, column := range columns {
-		params = append(params, fmt.Sprintf("&obj.%s", toScanField(column.Name)))
+		params = append(params, fmt.Sprintf("&obj.%s", toScanParam(column.Name)))
 	}
 
 	return strings.Join(params, ",")
@@ -78,7 +117,7 @@ func isForeignKey(name string) bool {
 func filterInputColumns(input []Column) []Column {
 	var output []Column
 	for _, column := range input {
-		if column.Name == "id" || column.Name == "shortname" {
+		if column.Name == "id" {
 			continue
 		} else {
 			output = append(output, column)
@@ -163,6 +202,8 @@ func generateLoaderCode(schema *Schema, templateName string, outPath string) {
 		SelectParams string
 		ScanParams   string
 		ForeignKey   string
+		UpdateFields string
+		UpdateParams string
 	}
 
 	var tables []Table
@@ -172,7 +213,9 @@ func generateLoaderCode(schema *Schema, templateName string, outPath string) {
 			ObjType:      toObjName(tableName),
 			TableName:    tableName,
 			SelectParams: toSelectParams(columns),
-			ScanParams:   toScanParams(columns)}
+			ScanParams:   toScanParams(columns),
+			UpdateFields: toUpdateFields(columns),
+			UpdateParams: toUpdateParams(columns)}
 
 		for _, column := range columns {
 			if isForeignKey(column.Name) {
@@ -190,7 +233,7 @@ func generateLoaderCode(schema *Schema, templateName string, outPath string) {
 
 	formattedBytes, err := format.Source(outBytes.Bytes())
 	if err != nil {
-		writeBytes(outBytes.Bytes(), path.Join(outPath, ".failed"))
+		writeBytes(outBytes.Bytes(), "error")
 		log.Fatal("Formatter failed:", err)
 	}
 
@@ -246,6 +289,7 @@ func main() {
 func writeBytes(bytes []byte, filename string) {
 	err := os.MkdirAll(path.Dir(filename), os.ModePerm)
 	if err != nil {
+		log.Printf("%s, %s\n", filename, path.Dir(filename))
 		log.Fatal(err)
 	}
 
