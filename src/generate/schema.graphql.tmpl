@@ -14,7 +14,7 @@ type Mutation {
 {{ range . }}
 input {{.ObjType}}Input {
 {{- range .Inputs }}
-  {{ .Name }}: {{ GetFieldType . }}
+  {{ .Name }}: {{ GetFieldType . }}!
 {{- end }}
 }
 {{ end }}
