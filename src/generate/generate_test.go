@@ -68,7 +68,7 @@ func Test_toInsertFieldValues(t *testing.T) {
 	}
 }
 
-func Test_toUpdateFields(t *testing.T) {
+func Test_toUpdateFieldNames(t *testing.T) {
 	columns := []Column{
 		Column{Name: "id", Type: "text"},
 		Column{Name: "name", Type: "text"},
@@ -76,13 +76,13 @@ func Test_toUpdateFields(t *testing.T) {
 		Column{Name: "image_group", Type: "text"},
 	}
 	expect := `name=?,catalog_series_id=?,image_group=?`
-	got := toUpdateFields(columns)
+	got := toUpdateFieldNames(columns)
 	if got != expect {
 		t.Errorf("Expected '%s', Got '%s'", expect, got)
 	}
 }
 
-func Test_toUpdateParams(t *testing.T) {
+func Test_toUpdateFieldValues(t *testing.T) {
 	columns := []Column{
 		Column{Name: "id", Type: "text"},
 		Column{Name: "name", Type: "text"},
@@ -90,13 +90,13 @@ func Test_toUpdateParams(t *testing.T) {
 		Column{Name: "image_group", Type: "text"},
 	}
 	expect := `input.Name,input.CatalogSeriesID,input.ImageGroup`
-	got := toUpdateParams(columns)
+	got := toUpdateFieldValues(columns)
 	if got != expect {
 		t.Errorf("Expected '%s', Got '%s'", expect, got)
 	}
 }
 
-func Test_toSelectParams(t *testing.T) {
+func Test_toSelectFieldNames(t *testing.T) {
 	columns := []Column{
 		Column{Name: "id", Type: "text"},
 		Column{Name: "name", Type: "text"},
@@ -104,13 +104,13 @@ func Test_toSelectParams(t *testing.T) {
 		Column{Name: "image_group", Type: "text"},
 	}
 	expect := "id,name,catalog_series_id,image_group"
-	got := toSelectParams(columns)
+	got := toSelectFieldNames(columns)
 	if got != expect {
 		t.Errorf("Expected '%s', Got '%s'", expect, got)
 	}
 }
 
-func Test_toScanParams(t *testing.T) {
+func Test_toSelectFieldValues(t *testing.T) {
 	columns := []Column{
 		Column{Name: "id", Type: "text"},
 		Column{Name: "name", Type: "text"},
@@ -118,7 +118,7 @@ func Test_toScanParams(t *testing.T) {
 		Column{Name: "image_group", Type: "text"},
 	}
 	expect := "&obj.ID,&obj.Name,&obj.CatalogSeriesID,&obj.ImageGroup"
-	got := toScanParams(columns)
+	got := toSelectFieldValues(columns)
 	if got != expect {
 		t.Errorf("Expected '%s', Got '%s'", expect, got)
 	}

@@ -66,7 +66,7 @@ func toUpdateParam(name string) string {
 	return strings.Join(parts, "")
 }
 
-func toUpdateParams(columns []Column) string {
+func toUpdateFieldValues(columns []Column) string {
 	var params []string
 	for _, column := range columns {
 		if column.Name != "id" {
@@ -81,7 +81,7 @@ func toUpdateField(name string) string {
 	return fmt.Sprintf(`%s=?`, name)
 }
 
-func toUpdateFields(columns []Column) string {
+func toUpdateFieldNames(columns []Column) string {
 	var params []string
 	for _, column := range columns {
 		if column.Name != "id" {
@@ -129,7 +129,7 @@ func toInsertFieldValues(columns []Column) string {
 	return strings.Join(params, ",")
 }
 
-func toSelectParams(columns []Column) string {
+func toSelectFieldNames(columns []Column) string {
 	var params []string
 	for _, column := range columns {
 		params = append(params, toSelectField(column.Name))
@@ -138,7 +138,7 @@ func toSelectParams(columns []Column) string {
 	return strings.Join(params, ",")
 }
 
-func toScanParams(columns []Column) string {
+func toSelectFieldValues(columns []Column) string {
 	var params []string
 	for _, column := range columns {
 		params = append(params, fmt.Sprintf("&obj.%s", toScanParam(column.Name)))
@@ -236,11 +236,11 @@ func generateLoaderCode(schema *Schema, templateName string, outPath string) {
 	type Table struct {
 		ObjType           string
 		TableName         string
-		SelectParams      string
-		ScanParams        string
+		SelectFieldNames  string
+		SelectFieldValues string
 		ForeignKey        string
-		UpdateFields      string
-		UpdateParams      string
+		UpdateFieldNames  string
+		UpdateFieldValues string
 		InsertFieldNames  string
 		InsertFieldParams string
 		InsertFieldValues string
@@ -252,10 +252,10 @@ func generateLoaderCode(schema *Schema, templateName string, outPath string) {
 		table := Table{
 			ObjType:           toObjName(tableName),
 			TableName:         tableName,
-			SelectParams:      toSelectParams(columns),
-			ScanParams:        toScanParams(columns),
-			UpdateFields:      toUpdateFields(columns),
-			UpdateParams:      toUpdateParams(columns),
+			SelectFieldNames:  toSelectFieldNames(columns),
+			SelectFieldValues: toSelectFieldValues(columns),
+			UpdateFieldNames:  toUpdateFieldNames(columns),
+			UpdateFieldValues: toUpdateFieldValues(columns),
 			InsertFieldNames:  toInsertFieldNames(columns),
 			InsertFieldParams: toInsertFieldParams(columns),
 			InsertFieldValues: toInsertFieldValues(columns)}

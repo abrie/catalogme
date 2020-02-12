@@ -61,7 +61,7 @@ func (datastore *Datastore) Get{{.ObjType}}(id string) (*{{.ObjType}}, error) {
 		obj {{.ObjType}}
 	)
 
-	err := datastore.DB.QueryRow("select {{.SelectParams}} from {{.TableName}} where id=?", id).Scan({{.ScanParams}})
+	err := datastore.DB.QueryRow("select {{.SelectFieldNames}} from {{.TableName}} where id=?", id).Scan({{.SelectFieldValues}})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -94,12 +94,12 @@ func (datastore *Datastore) Create{{.ObjType}}(input *{{.ObjType}}Input) (*{{.Ob
 
 {{ define "UpdateOne" }}
 func (datastore *Datastore) Update{{.ObjType}}(id string, input *{{.ObjType}}Input) (*{{.ObjType}}, error) {
-  stmt, err := datastore.DB.Prepare("update {{.TableName}} set {{.UpdateFields}} where id=?")
+  stmt, err := datastore.DB.Prepare("update {{.TableName}} set {{.UpdateFieldNames}} where id=?")
   if err != nil {
     log.Fatal(err)
   }
 
-  _, err = stmt.Exec({{.UpdateParams}}, id)
+  _, err = stmt.Exec({{.UpdateFieldValues}}, id)
   if err != nil {
     log.Fatal(err)
   }
@@ -113,7 +113,7 @@ func (datastore *Datastore) List_{{.ObjType}}(id *string) ([]*{{.ObjType}}, erro
 	var (
 		list []*{{.ObjType}}
 	)
-	rows, err := datastore.DB.Query("select {{.SelectParams}} from {{.TableName}} where {{.ForeignKey}}=?", *id)
+	rows, err := datastore.DB.Query("select {{.SelectFieldNames}} from {{.TableName}} where {{.ForeignKey}}=?", *id)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -121,7 +121,7 @@ func (datastore *Datastore) List_{{.ObjType}}(id *string) ([]*{{.ObjType}}, erro
 
 	for rows.Next() {
 		obj := {{.ObjType}}{}
-		err := rows.Scan({{.ScanParams}})
+		err := rows.Scan({{.SelectFieldValues}})
 		if err != nil {
 			log.Fatal(err)
 		}
