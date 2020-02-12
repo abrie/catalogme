@@ -4,10 +4,27 @@ import (
 	"database/sql"
 	_ "github.com/mattn/go-sqlite3"
 	"log"
+  "crypto/rand"
+	"encoding/base64"
 )
 
 type Datastore struct {
 	DB *sql.DB}
+
+func generateRandomBytes(n int) ([]byte, error) {
+	b := make([]byte, n)
+	_, err := rand.Read(b)
+	if err != nil {
+		return nil, err
+	}
+
+	return b, nil
+}
+
+func generateRandomString(s int) (string, error) {
+	b, err := generateRandomBytes(s)
+	return base64.URLEncoding.EncodeToString(b), err
+}
 
 func (datastore *Datastore) Ping() {
 	err := datastore.DB.Ping()
@@ -35,6 +52,7 @@ func (datastore *Datastore) Close() {
 {{ template "QueryList" . }}
 {{ end }}
 {{ template "UpdateOne" . }}
+{{ template "CreateOne" . }}
 {{ end }}
 
 {{ define "QueryOne" }}
@@ -49,6 +67,28 @@ func (datastore *Datastore) Get{{.ObjType}}(id string) (*{{.ObjType}}, error) {
 	}
 
 	return &obj, nil
+}
+{{ end }}
+
+{{ define "CreateOne" }}
+func (datastore *Datastore) Create{{.ObjType}}(input *{{.ObjType}}Input) (*{{.ObjType}}, error) {
+  stmt, err := datastore.DB.Prepare("insert into {{.TableName}}(id,{{.InsertFieldNames}}) values (?,{{.InsertFieldParams}})")
+
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  id, err := generateRandomString(32)
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  _, err = stmt.Exec(id, {{.InsertFieldValues}})
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  return datastore.Get{{.ObjType}}(id)
 }
 {{ end }}
 

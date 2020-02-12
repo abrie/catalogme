@@ -92,6 +92,43 @@ func toUpdateFields(columns []Column) string {
 	return strings.Join(params, ",")
 }
 
+func toInsertField(name string) string {
+	return name
+}
+
+func toInsertFieldNames(columns []Column) string {
+	var params []string
+	for _, column := range columns {
+		if column.Name != "id" {
+			params = append(params, toInsertField(column.Name))
+		}
+	}
+
+	return strings.Join(params, ",")
+}
+
+func toInsertFieldParams(columns []Column) string {
+	var params []string
+	for _, column := range columns {
+		if column.Name != "id" {
+			params = append(params, "?")
+		}
+	}
+
+	return strings.Join(params, ",")
+}
+
+func toInsertFieldValues(columns []Column) string {
+	var params []string
+	for _, column := range columns {
+		if column.Name != "id" {
+			params = append(params, fmt.Sprintf("input.%s", toScanParam(column.Name)))
+		}
+	}
+
+	return strings.Join(params, ",")
+}
+
 func toSelectParams(columns []Column) string {
 	var params []string
 	for _, column := range columns {
@@ -197,25 +234,31 @@ func generateGQLSchema(schema *Schema, templateName string, outputPath string) {
 
 func generateLoaderCode(schema *Schema, templateName string, outPath string) {
 	type Table struct {
-		ObjType      string
-		TableName    string
-		SelectParams string
-		ScanParams   string
-		ForeignKey   string
-		UpdateFields string
-		UpdateParams string
+		ObjType           string
+		TableName         string
+		SelectParams      string
+		ScanParams        string
+		ForeignKey        string
+		UpdateFields      string
+		UpdateParams      string
+		InsertFieldNames  string
+		InsertFieldParams string
+		InsertFieldValues string
 	}
 
 	var tables []Table
 
 	for tableName, columns := range *schema {
 		table := Table{
-			ObjType:      toObjName(tableName),
-			TableName:    tableName,
-			SelectParams: toSelectParams(columns),
-			ScanParams:   toScanParams(columns),
-			UpdateFields: toUpdateFields(columns),
-			UpdateParams: toUpdateParams(columns)}
+			ObjType:           toObjName(tableName),
+			TableName:         tableName,
+			SelectParams:      toSelectParams(columns),
+			ScanParams:        toScanParams(columns),
+			UpdateFields:      toUpdateFields(columns),
+			UpdateParams:      toUpdateParams(columns),
+			InsertFieldNames:  toInsertFieldNames(columns),
+			InsertFieldParams: toInsertFieldParams(columns),
+			InsertFieldValues: toInsertFieldValues(columns)}
 
 		for _, column := range columns {
 			if isForeignKey(column.Name) {

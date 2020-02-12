@@ -26,6 +26,48 @@ func Test_toObjName(t *testing.T) {
 	}
 }
 
+func Test_toInsertFieldNames(t *testing.T) {
+	columns := []Column{
+		Column{Name: "id", Type: "text"},
+		Column{Name: "name", Type: "text"},
+		Column{Name: "catalog_series_id", Type: "text"},
+		Column{Name: "image_group", Type: "text"},
+	}
+	expect := `name,catalog_series_id,image_group`
+	got := toInsertFieldNames(columns)
+	if got != expect {
+		t.Errorf("Expected '%s', Got '%s'", expect, got)
+	}
+}
+
+func Test_toInsertFieldParams(t *testing.T) {
+	columns := []Column{
+		Column{Name: "id", Type: "text"},
+		Column{Name: "name", Type: "text"},
+		Column{Name: "catalog_series_id", Type: "text"},
+		Column{Name: "image_group", Type: "text"},
+	}
+	expect := `?,?,?`
+	got := toInsertFieldParams(columns)
+	if got != expect {
+		t.Errorf("Expected '%s', Got '%s'", expect, got)
+	}
+}
+
+func Test_toInsertFieldValues(t *testing.T) {
+	columns := []Column{
+		Column{Name: "id", Type: "text"},
+		Column{Name: "name", Type: "text"},
+		Column{Name: "catalog_series_id", Type: "text"},
+		Column{Name: "image_group", Type: "text"},
+	}
+	expect := `input.Name,input.CatalogSeriesID,input.ImageGroup`
+	got := toInsertFieldValues(columns)
+	if got != expect {
+		t.Errorf("Expected '%s', Got '%s'", expect, got)
+	}
+}
+
 func Test_toUpdateFields(t *testing.T) {
 	columns := []Column{
 		Column{Name: "id", Type: "text"},
