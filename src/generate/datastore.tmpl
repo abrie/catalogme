@@ -1,11 +1,12 @@
 package datastore
 
 import (
-	"database/sql"
-	_ "github.com/mattn/go-sqlite3"
-	"log"
   "crypto/rand"
+	"database/sql"
 	"encoding/base64"
+  "fmt"
+	"log"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 type Datastore struct {
@@ -62,8 +63,11 @@ func (datastore *Datastore) Get{{.ObjType}}(id string) (*{{.ObjType}}, error) {
 	)
 
 	err := datastore.DB.QueryRow("select {{.SelectFieldNames}} from {{.TableName}} where id=?", id).Scan({{.SelectFieldValues}})
+  if err == sql.ErrNoRows {
+    return nil, fmt.Errorf(`Found no row in '{{.TableName}}' with id='%s'`, id)
+  }
 	if err != nil {
-		log.Fatal(err)
+    log.Fatal(err)
 	}
 
 	return &obj, nil
@@ -99,10 +103,20 @@ func (datastore *Datastore) Update{{.ObjType}}(id string, input *{{.ObjType}}Inp
     log.Fatal(err)
   }
 
-  _, err = stmt.Exec({{.UpdateFieldValues}}, id)
+  result, err := stmt.Exec({{.UpdateFieldValues}}, id)
   if err != nil {
     log.Fatal(err)
   }
+
+  count, err := result.RowsAffected()
+  if err != nil {
+    log.Fatal(err)
+  }
+  if count == 0 {
+    return nil, fmt.Errorf(`Found no row to update in '{{.TableName}}' with id='%s'`, id)
+  }
+
+  log.Println(result.LastInsertId())
 
   return datastore.Get{{.ObjType}}(id)
 }
